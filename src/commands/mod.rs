@@ -25,7 +25,7 @@ pub fn type_(inputs: Vec<String>) {
         }
     }
 
-    print!("{}: command not found", inputs[1]);
+    print!("{} not found", inputs[1]);
 }
 
 pub fn exit(inputs: Vec<String>) {
