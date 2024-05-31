@@ -19,7 +19,6 @@ fn main() {
         match stdin.read_line(&mut input) {
             Ok(_) => {
                 handle_input(&input, &commands);
-                print!("\n");
             }
             Err(error) => println!("error: {}", error),
         }
@@ -40,6 +39,7 @@ fn handle_input(input: &String, commands: &HashMap<&str, &dyn Fn(Vec<String>)>) 
     match commands.get(first_input) {
         Some(command) => {
             command(input_array);
+            print!("\n");
         }
         None => {
             match get_exec_path(first_input) {
@@ -50,7 +50,7 @@ fn handle_input(input: &String, commands: &HashMap<&str, &dyn Fn(Vec<String>)>) 
                         .expect("failed to execute process");
                 }
                 Err(_) => {
-                    print!("{}: command not found", first_input);
+                    println!("{}: command not found", first_input);
                 }
             }
         }
