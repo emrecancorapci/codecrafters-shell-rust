@@ -11,10 +11,9 @@ fn main() {
     io::stdout().flush().unwrap();
     let stdin = io::stdin();
     let mut input = String::new();
-    let mut input_array: Vec<String> = Vec::new();
 
     while stdin.read_line(&mut input).is_ok() {
-        input_array = input
+        let input_array: Vec<String> = input
             .trim()
             .split_whitespace()
             .map(|s| s.to_string())
