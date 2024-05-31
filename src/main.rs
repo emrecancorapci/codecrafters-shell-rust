@@ -10,7 +10,7 @@ fn main() {
 
     while stdin.read_line(&mut input).is_ok() {
         match input.trim() {
-            "exit" => {
+            "exit 0" => {
                 break;
             }
             _ => {}
