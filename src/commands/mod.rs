@@ -1,0 +1,38 @@
+use std::collections::HashMap;
+
+type ICommand = dyn Fn(Vec<String>);
+
+const SUPPORTED_COMMANDS: [&str; 3] = ["echo", "type", "exit"];
+
+pub fn get_commands() -> HashMap<&'static str, &'static ICommand> {
+    let mut map: HashMap<&str, &ICommand> = HashMap::new();
+    map.insert("type", &type_);
+    map.insert("echo", &echo);
+    map.insert("exit", &exit);
+    map
+}
+
+pub fn echo(inputs: Vec<String>) {
+    for input in inputs.iter().skip(1) {
+        print!("{} ", input);
+    }
+}
+
+pub fn type_(inputs: Vec<String>) {
+    for command in SUPPORTED_COMMANDS.iter() {
+        if &inputs[1] == command {
+            println!("{} is a shell builtin", command);
+            return;
+        }
+    }
+
+    println!("{}: command not found", inputs[1]);
+}
+
+pub fn exit(inputs: Vec<String>) {
+    if inputs[1] == "0" {
+        std::process::exit(0);
+    } else {
+        println!("{}: command not found", inputs[0]);
+    }
+}
