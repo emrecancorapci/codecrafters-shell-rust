@@ -9,6 +9,13 @@ fn main() {
     let mut input = String::new();
 
     while stdin.read_line(&mut input).is_ok() {
+        match input.trim() {
+            "exit" => {
+                break;
+            }
+            _ => {}
+        }
+
         run_command(input.trim());
 
         // Cleaning
