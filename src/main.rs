@@ -1,23 +1,30 @@
 #[allow(unused_imports)]
-use std::io::{self, Write};
+use std::io::{ self, Write };
 
 fn main() {
-    let existing_commands = vec!["cd", "exit", "help", "ls", "pwd"];
     print!("$ ");
-    io::stdout().flush().unwrap();
 
-    // Wait for user input
+    io::stdout().flush().unwrap();
     let stdin = io::stdin();
     let mut input = String::new();
-    stdin.read_line(&mut input).unwrap();
 
-    for cmd in existing_commands {
-        if input.trim() == cmd {
-            println!("{} command found\n", cmd);
-            return;
-        } else {
-            print!("{}: command not found\n", input.trim());
-            return;
-        }
+    while stdin.read_line(&mut input).is_ok() {
+        run_command(input.trim());
+
+        // Cleaning
+        input.clear();
+        print!("$ ");
+        io::stdout().flush().unwrap();
+    }
+}
+
+fn run_command(command: &str) {
+    match command {
+        "cd" => println!("cd command found"),
+        "exit" => println!("exit command found"),
+        "help" => println!("help command found"),
+        "ls" => println!("ls command found"),
+        "pwd" => println!("pwd command found"),
+        _ => println!("{}: command not found", command),
     }
 }
