@@ -15,7 +15,6 @@ pub fn get_commands() -> HashMap<&'static str, &'static ICommand> {
 
 pub fn echo(inputs: Vec<String>) {
     print!("{}", inputs[1..].join(" "));
-    
 }
 
 pub fn type_(inputs: Vec<String>) {

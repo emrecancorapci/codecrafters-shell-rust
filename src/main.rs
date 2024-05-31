@@ -1,5 +1,6 @@
-#[allow(unused_imports)]
-use std::io::{ self, Write };
+use std::{ collections::HashMap, process::Command, io::{ self, Write } };
+
+use helpers::path::get_exec_path;
 
 mod commands;
 mod helpers {
@@ -17,25 +18,41 @@ fn main() {
 
         match stdin.read_line(&mut input) {
             Ok(_) => {
-                let input_array: Vec<String> = input
-                    .trim()
-                    .split_whitespace()
-                    .map(|s| s.to_string())
-                    .collect();
-
-                match commands.get(input_array[0].as_str()) {
-                    Some(command) => {
-                        command(input_array);
-                    }
-                    None => {
-                        print!("{}: command not found", input_array[0]);
-                    }
-                }
+                handle_input(&input, &commands);
                 print!("\n");
             }
             Err(error) => println!("error: {}", error),
         }
 
         input.clear();
+    }
+}
+
+fn handle_input(input: &String, commands: &HashMap<&str, &dyn Fn(Vec<String>)>) {
+    let input_array: Vec<String> = input
+        .trim()
+        .split_whitespace()
+        .map(|s| s.to_string())
+        .collect();
+
+    let first_input = input_array[0].as_str();
+
+    match commands.get(first_input) {
+        Some(command) => {
+            command(input_array);
+        }
+        None => {
+            match get_exec_path(first_input) {
+                Ok(path) => {
+                    Command::new(path)
+                        .args(input_array[1..].iter())
+                        .status()
+                        .expect("failed to execute process");
+                }
+                Err(_) => {
+                    print!("{}: command not found", first_input);
+                }
+            }
+        }
     }
 }
