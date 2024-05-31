@@ -39,7 +39,6 @@ fn handle_input(input: &String, commands: &HashMap<&str, &dyn Fn(Vec<String>)>) 
     match commands.get(first_input) {
         Some(command) => {
             command(input_array);
-            print!("\n");
         }
         None => {
             match get_exec_path(first_input) {
