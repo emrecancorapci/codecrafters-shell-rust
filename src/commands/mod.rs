@@ -14,14 +14,14 @@ pub fn get_commands() -> HashMap<&'static str, &'static ICommand> {
 
 pub fn echo(inputs: Vec<String>) {
     for input in inputs.iter().skip(1) {
-        print!("{} ", input);
+        print!("{}", input);
     }
 }
 
 pub fn type_(inputs: Vec<String>) {
     for command in SUPPORTED_COMMANDS.iter() {
         if &inputs[1] == command {
-            println!("{} is a shell builtin", command);
+            print!("{} is a shell builtin", command);
             return;
         }
     }
@@ -33,6 +33,6 @@ pub fn exit(inputs: Vec<String>) {
     if inputs[1] == "0" {
         std::process::exit(0);
     } else {
-        println!("{}: command not found", inputs[0]);
+        print!("{}: command not found", inputs[0]);
     }
 }
