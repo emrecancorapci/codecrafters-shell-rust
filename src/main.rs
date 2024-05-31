@@ -13,10 +13,10 @@ fn main() {
 
     for cmd in existing_commands {
         if input.trim() == cmd {
-            println!("{} command found", cmd);
+            println!("{} command found\n", cmd);
             return;
         } else {
-            print!("{}: command not found", input.trim());
+            print!("{}: command not found\n", input.trim());
             return;
         }
     }
