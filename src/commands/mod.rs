@@ -49,8 +49,20 @@ pub fn pwd(_inputs: Vec<String>) {
 }
 
 pub fn cd(inputs: Vec<String>) {
-    match env::set_current_dir(&inputs[1]) {
-        Ok(_) => {},
-        Err(_) => print!("{}: No such file or directory\n", &inputs[1]),
+    if inputs.len() < 2 {
+        print!("cd: missing argument\n");
+        return;
+    }
+    match inputs[1].as_str() {
+        "~" => {
+            // Doesn't work on windows. There is a crate called homedir that can be used to get the home directory.
+            env::set_current_dir(env::var("HOME").unwrap()).unwrap();
+        }
+        path => {
+            match env::set_current_dir(&path) {
+                Ok(_) => {}
+                Err(_) => print!("{}: No such file or directory\n", &path),
+            }
+        }
     }
 }
