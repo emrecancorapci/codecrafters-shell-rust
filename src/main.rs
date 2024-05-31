@@ -9,7 +9,7 @@ fn main() {
     let mut input = String::new();
 
     loop {
-        print!("\n$ ");
+        print!("$ ");
         io::stdout().flush().unwrap();
 
         match stdin.read_line(&mut input) {
@@ -28,6 +28,7 @@ fn main() {
                         print!("{}: command not found", input_array[0]);
                     }
                 }
+                print!("\n");
             }
             Err(error) => println!("error: {}", error),
         }
