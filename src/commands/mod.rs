@@ -25,6 +25,15 @@ pub fn type_(inputs: Vec<String>) {
         }
     }
 
+    for path in std::env::var("PATH").unwrap().split(":") {
+        let path = format!("{}/{}", path, inputs[1]);
+
+        if std::fs::metadata(&path).is_ok() {
+            print!("{} is {}", inputs[1], path);
+            return;
+        }
+    } 
+
     print!("{} not found", inputs[1]);
 }
 
