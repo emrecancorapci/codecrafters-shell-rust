@@ -29,8 +29,6 @@ pub fn type_(inputs: Vec<String>) {
         Ok(path) => print!("{} is {}", inputs[1], path),
         Err(_) => print!("{} not found", inputs[1]),
     }
-
-    print!("{} not found", inputs[1]);
 }
 
 pub fn exit(inputs: Vec<String>) {
