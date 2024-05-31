@@ -2,6 +2,9 @@
 use std::io::{ self, Write };
 
 mod commands;
+mod helpers {
+    pub mod path;
+}
 fn main() {
     let commands = commands::get_commands();
 
