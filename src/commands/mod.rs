@@ -14,7 +14,7 @@ pub fn get_commands() -> HashMap<&'static str, &'static ICommand> {
 
 pub fn echo(inputs: Vec<String>) {
     for input in inputs.iter().skip(1) {
-        print!("{}", input);
+        print!("{} ", input);
     }
 }
 
@@ -26,7 +26,7 @@ pub fn type_(inputs: Vec<String>) {
         }
     }
 
-    println!("{}: command not found", inputs[1]);
+    print!("{}: command not found", inputs[1]);
 }
 
 pub fn exit(inputs: Vec<String>) {
