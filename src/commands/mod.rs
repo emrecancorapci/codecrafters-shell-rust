@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::helpers::path::get_exec_path;
+use crate::helpers::path;
 
 type ICommand = dyn Fn(Vec<String>);
 
@@ -25,7 +25,7 @@ pub fn type_(inputs: Vec<String>) {
         }
     }
 
-    match get_exec_path(&inputs[1]) {
+    match path::get_exec_path_string(&inputs[1]) {
         Ok(path) => print!("{} is {}", inputs[1], path),
         Err(_) => print!("{} not found", inputs[1]),
     }
