@@ -51,6 +51,6 @@ pub fn pwd(_inputs: Vec<String>) {
 pub fn cd(inputs: Vec<String>) {
     match env::set_current_dir(&inputs[1]) {
         Ok(_) => {},
-        Err(_) => print!("failed to change directory\n"),
+        Err(_) => print!("{}: No such file or directory\n", &inputs[1]),
     }
 }
