@@ -7,7 +7,7 @@ use std::{
 use shell_starter_rust::{
     commands::{self, ICommand},
     helpers::path::get_exec_path,
-    input_parser::InputParser,
+    input_parser::{Input, InputParser},
 };
 
 fn main() {
@@ -32,29 +32,55 @@ fn main() {
 }
 
 fn handle_input(input: &String, commands: &HashMap<String, Box<ICommand>>) {
-    let input_array: Vec<String> = input
-        .trim()
-        .split_whitespace()
-        .map(|s| s.to_string())
-        .collect();
+    if input.is_empty() {
+        return println!("");
+    }
 
-    let first_input = input_array[0].as_str();
+    let mut input_parser = InputParser::new();
+    let input = input.trim().to_string();
 
-    match commands.get(first_input) {
-        Some(command) => match InputParser::new().parse(input) {
-            Ok(parsed_input) => command(parsed_input),
-            Err(err) => eprintln!("{}", err.to_string()),
-        },
-        None => match get_exec_path(first_input) {
-            Ok(path) => {
-                Command::new(path)
-                    .args(input_array[1..].iter())
+    let parsed_input = input_parser.parse(input);
+
+    if parsed_input.is_err() {
+        eprintln!("{}", parsed_input.unwrap_err());
+        return;
+    }
+
+    let input = parsed_input.unwrap();
+    let first_input = input.first();
+
+    if first_input.is_none() {
+        println!("");
+        return;
+    }
+
+    let first_input = first_input.unwrap();
+
+    match first_input {
+        Input::Command(input_cmd) => {
+            let cmd = commands.get(input_cmd);
+
+            if cmd.is_none() {
+                let path = get_exec_path(input_cmd.as_str());
+
+                if path.is_err() {
+                    println!("{}: command not found", input_cmd);
+                }
+
+                let input_array = input
+                    .iter()
+                    .skip(1)
+                    .map(|i| i.get_value())
+                    .collect::<Vec<String>>();
+
+                Command::new(path.unwrap())
+                    .args(input_array.iter())
                     .status()
                     .expect("failed to execute process");
             }
-            Err(_) => {
-                println!("{}: command not found", first_input);
-            }
-        },
+
+            cmd.unwrap()(input);
+        }
+        _ => {}
     }
 }

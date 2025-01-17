@@ -9,6 +9,16 @@ pub enum Input {
     String(String, bool),
 }
 
+impl Input {
+    pub fn get_value(&self) -> String {
+        match self{
+            Input::Command(val) => val.to_string(),
+            Input::Argument(val, _) => val.to_string(),
+            Input::String(val, _) => val.to_string(),
+        }
+    }
+}
+
 impl Display for Input {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self)
@@ -40,7 +50,7 @@ impl InputParser {
         }
     }
 
-    pub fn parse(&mut self, str: &String) -> Result<&Vec<Input>, Error> {
+    pub fn parse(&mut self, str: String) -> Result<&Vec<Input>, Error> {
         let mut iter = str.chars().into_iter().enumerate().peekable();
 
         while let Some((i, ch)) = iter.next() {

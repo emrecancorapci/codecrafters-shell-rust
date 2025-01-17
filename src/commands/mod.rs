@@ -19,6 +19,8 @@ pub fn echo(inputs: &Vec<Input>) {
     if let Some(Input::String(value, _)) = inputs.iter().find(|i| matches!(i, Input::String(_, _)))
     {
         println!("{}", value);
+    } else if let Some(Input::Command(value)) = inputs.get(1) {
+        println!("{}", value);
     } else {
         eprintln!("No string input found.");
     }

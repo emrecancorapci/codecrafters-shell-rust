@@ -10,7 +10,7 @@ fn hello_world() {
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -31,7 +31,7 @@ fn spacey_hello_world() {
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -44,15 +44,15 @@ fn spacey_hello_world() {
 
 #[test]
 fn echo_hello_world_single_quote() {
-    let test_string = "echo 'hello world'".to_string();
+    let test_string = "echo 'example test'".to_string();
     let expected_result = vec![
         Input::Command("echo".to_string()),
-        Input::String("hello world".to_string(), false),
+        Input::String("example test".to_string(), false),
     ];
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -73,7 +73,7 @@ fn echo_hello_world_double_quote() {
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -94,7 +94,7 @@ fn spacey_echo_hello_world() {
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -115,7 +115,7 @@ fn double_inside_single_quote() {
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -136,7 +136,7 @@ fn single_inside_double_quote() {
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -158,7 +158,7 @@ fn single_dash_argument() {
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -180,7 +180,7 @@ fn double_dash_argument() {
 
     let mut parser = InputParser::new();
 
-    match parser.parse(&test_string) {
+    match parser.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -190,6 +190,8 @@ fn double_dash_argument() {
         }
     }
 }
+
+
 
 fn assert_vec_eq<T: std::fmt::Debug + PartialEq>(vec1: &[T], vec2: &[T]) {
     if vec1 != vec2 {
