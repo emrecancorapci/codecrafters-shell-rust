@@ -1,11 +1,15 @@
-use std::{ collections::HashMap, process::Command, io::{ self, Write } };
+use std::{
+    collections::HashMap,
+    io::{self, Write},
+    process::Command,
+};
 
-use helpers::path::get_exec_path;
+use shell_starter_rust::{
+    commands::{self, ICommand},
+    helpers::path::get_exec_path,
+    input_parser::InputParser,
+};
 
-mod commands;
-mod helpers {
-    pub mod path;
-}
 fn main() {
     let commands = commands::get_commands();
 
@@ -27,7 +31,7 @@ fn main() {
     }
 }
 
-fn handle_input(input: &String, commands: &HashMap<&str, &dyn Fn(Vec<String>)>) {
+fn handle_input(input: &String, commands: &HashMap<String, Box<ICommand>>) {
     let input_array: Vec<String> = input
         .trim()
         .split_whitespace()
@@ -37,21 +41,20 @@ fn handle_input(input: &String, commands: &HashMap<&str, &dyn Fn(Vec<String>)>) 
     let first_input = input_array[0].as_str();
 
     match commands.get(first_input) {
-        Some(command) => {
-            command(input_array);
-        }
-        None => {
-            match get_exec_path(first_input) {
-                Ok(path) => {
-                    Command::new(path)
-                        .args(input_array[1..].iter())
-                        .status()
-                        .expect("failed to execute process");
-                }
-                Err(_) => {
-                    println!("{}: command not found", first_input);
-                }
+        Some(command) => match InputParser::new().parse(input) {
+            Ok(parsed_input) => command(parsed_input),
+            Err(err) => eprintln!("{}", err.to_string()),
+        },
+        None => match get_exec_path(first_input) {
+            Ok(path) => {
+                Command::new(path)
+                    .args(input_array[1..].iter())
+                    .status()
+                    .expect("failed to execute process");
             }
-        }
+            Err(_) => {
+                println!("{}: command not found", first_input);
+            }
+        },
     }
 }

@@ -1,3 +1,4 @@
+use std::fmt::Display;
 #[allow(unused_assignments)]
 use std::io::{Error, ErrorKind};
 
@@ -6,6 +7,12 @@ pub enum Input {
     Command(String),
     Argument(String, bool),
     String(String, bool),
+}
+
+impl Display for Input {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self)
+    }
 }
 
 #[derive(PartialEq, Eq)]
