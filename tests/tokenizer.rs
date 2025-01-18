@@ -5,6 +5,7 @@ fn hello_world() {
     let test_string = "hello world".to_string();
     let expected_result = vec![
         Token::Command("hello".to_string()),
+        Token::Space,
         Token::Command("world".to_string()),
     ];
 
@@ -26,6 +27,7 @@ fn spacey_hello_world() {
     let test_string = "hello                 world".to_string();
     let expected_result = vec![
         Token::Command("hello".to_string()),
+        Token::Space,
         Token::Command("world".to_string()),
     ];
 
@@ -47,6 +49,7 @@ fn echo_hello_world_single_quote() {
     let test_string = "echo 'example test'".to_string();
     let expected_result = vec![
         Token::Command("echo".to_string()),
+        Token::Space,
         Token::String("example test".to_string(), false),
     ];
 
@@ -68,6 +71,7 @@ fn echo_hello_world_double_quote() {
     let test_string = "echo \"hello world\"".to_string();
     let expected_result = vec![
         Token::Command("echo".to_string()),
+        Token::Space,
         Token::String("hello world".to_string(), true),
     ];
 
@@ -89,6 +93,7 @@ fn spacey_echo_hello_world() {
     let test_string = "echo \"hello                   world\"".to_string();
     let expected_result = vec![
         Token::Command("echo".to_string()),
+        Token::Space,
         Token::String("hello                   world".to_string(), true),
     ];
 
@@ -110,6 +115,7 @@ fn double_inside_single_quote() {
     let test_string = "echo '\"hello world\"'".to_string();
     let expected_result = vec![
         Token::Command("echo".to_string()),
+        Token::Space,
         Token::String("\"hello world\"".to_string(), false),
     ];
 
@@ -131,6 +137,7 @@ fn single_inside_double_quote() {
     let test_string = "echo \"'hello world'\"".to_string();
     let expected_result = vec![
         Token::Command("echo".to_string()),
+        Token::Space,
         Token::String("'hello world'".to_string(), true),
     ];
 
@@ -152,7 +159,9 @@ fn single_dash_argument() {
     let test_string = "echo -s 'hello world'".to_string();
     let expected_result = vec![
         Token::Command("echo".to_string()),
+        Token::Space,
         Token::Argument("s".to_string(), false),
+        Token::Space,
         Token::String("hello world".to_string(), false),
     ];
 
@@ -174,7 +183,9 @@ fn double_dash_argument() {
     let test_string = "echo --silent 'hello world'".to_string();
     let expected_result = vec![
         Token::Command("echo".to_string()),
+        Token::Space,
         Token::Argument("silent".to_string(), true),
+        Token::Space,
         Token::String("hello world".to_string(), false),
     ];
 

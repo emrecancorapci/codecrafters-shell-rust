@@ -18,7 +18,7 @@ enum ParseMode {
 pub struct Tokenizer {
     temp: String,
     mode: ParseMode,
-    result: Vec<Token>,
+    tokens: Vec<Token>,
 }
 
 impl Tokenizer {
@@ -26,7 +26,7 @@ impl Tokenizer {
         Tokenizer {
             temp: String::new(),
             mode: ParseMode::None,
-            result: Vec::new(),
+            tokens: Vec::new(),
         }
     }
 
@@ -50,7 +50,9 @@ impl Tokenizer {
                         self.mode = ParseMode::Value;
                         self.temp.push(ch);
                     }
-                    ' ' => {}
+                    ' ' => {
+                        self.push_space();
+                    }
                     _ => {
                         return Err(Error::new(
                             ErrorKind::InvalidInput,
@@ -60,7 +62,10 @@ impl Tokenizer {
                 },
                 ParseMode::Value => match ch {
                     'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => self.temp.push(ch),
-                    ' ' => self.push_input(),
+                    ' ' => {
+                        self.push_input();
+                        self.push_space();
+                    }
                     _ => {
                         return Err(Error::new(
                             ErrorKind::InvalidInput,
@@ -78,7 +83,10 @@ impl Tokenizer {
                 },
                 ParseMode::SingleDashArg => match ch {
                     'a'..='z' | 'A'..='Z' | '_' | '-' => self.temp.push(ch),
-                    ' ' => self.push_input(),
+                    ' ' => {
+                        self.push_input();
+                        self.push_space();
+                    },
                     _ => {
                         return Err(Error::new(
                             ErrorKind::InvalidInput,
@@ -88,7 +96,10 @@ impl Tokenizer {
                 },
                 ParseMode::DoubleDashArg => match ch {
                     'a'..='z' | 'A'..='Z' | '_' | '-' => self.temp.push(ch),
-                    ' ' => self.push_input(),
+                    ' ' => {
+                        self.push_input();
+                        self.push_space();
+                    },
                     _ => {
                         return Err(Error::new(
                             ErrorKind::InvalidInput,
@@ -113,11 +124,11 @@ impl Tokenizer {
                 ))
             }
             ParseMode::None => {
-                return Ok(&self.result);
+                return Ok(&self.tokens);
             }
             _ => {
                 self.push_input();
-                return Ok(&self.result);
+                return Ok(&self.tokens);
             }
         }
     }
@@ -125,19 +136,26 @@ impl Tokenizer {
     fn push_input(&mut self) {
         match self.mode {
             ParseMode::None => panic!("This shouldn't have happened!"),
-            ParseMode::Value => self.result.push(Token::Command(self.temp.to_string())),
+            ParseMode::Value => self.tokens.push(Token::Command(self.temp.to_string())),
             ParseMode::StringSingle => self
-                .result
+                .tokens
                 .push(Token::String(self.temp.to_string(), false)),
-            ParseMode::StringDouble => self.result.push(Token::String(self.temp.to_string(), true)),
+            ParseMode::StringDouble => self.tokens.push(Token::String(self.temp.to_string(), true)),
             ParseMode::SingleDashArg => self
-                .result
+                .tokens
                 .push(Token::Argument(self.temp.to_string(), false)),
             ParseMode::DoubleDashArg => self
-                .result
+                .tokens
                 .push(Token::Argument(self.temp.to_string(), true)),
         }
         self.temp = String::new();
         self.mode = ParseMode::None;
+    }
+
+    fn push_space(&mut self) {
+        if self.tokens.last() != Some(&Token::Space) {
+
+            self.tokens.push(Token::Space);
+        }
     }
 }
