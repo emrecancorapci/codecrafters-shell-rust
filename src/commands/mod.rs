@@ -1,8 +1,8 @@
 use crate::{helpers::path, tokenizer::Token};
 use std::{collections::HashMap, env};
 
-pub type ICommand = dyn for<'a> Fn(&'a Vec<Token>);
 type TokenVector<'a> = &'a Vec<Token>;
+pub type ICommand = dyn for<'a> Fn(TokenVector<'a>);
 
 const SUPPORTED_COMMANDS: [&str; 5] = ["echo", "type", "exit", "pwd", "cd"];
 
@@ -18,30 +18,49 @@ pub fn get_commands() -> HashMap<String, Box<ICommand>> {
 
 pub fn echo(inputs: TokenVector) {
     if inputs.len() >= 3 {
-        let string = if inputs.iter().any(|i| match i {
-            Token::String(_, _) => true,
-            _ => false,
-        }) {
-            inputs
-                .iter()
-                .skip(1)
-                .filter(|i: &&Token| matches!(i, Token::String(_, _)))
-                .map(|i| i.get_value())
-                .reduce(|acc, i| format!("{}{}", acc, i))
-                .unwrap()
-        } else {
-            inputs
-                .iter()
-                .skip(1)
-                .filter(|i: &&Token| matches!(i, Token::Command(_)))
-                .map(|i| i.get_value())
-                .reduce(|acc, i| format!("{} {}", acc, i))
-                .unwrap()
-        };
+        let mut string = String::new();
+        let mut is_string: Option<bool> = None;
+
+        inputs
+            .iter()
+            .skip(2)
+            .enumerate()
+            .for_each(|(i, t)| match t {
+                Token::Space => {
+                    if i > 0 {
+                        match is_string {
+                            Some(true) => {
+                                string.push(' ');
+                            }
+                            Some(false) => {
+                                string.push(' ');
+                            }
+                            None => {}
+                        }
+                    }
+                }
+                Token::Command(cmd) => match is_string {
+                    Some(true) => {}
+                    Some(false) => string.push_str(cmd.as_str()),
+                    None => {
+                        is_string = Some(false);
+                        string.push_str(cmd.as_str());
+                    }
+                },
+                Token::Argument(_, _) => {}
+                Token::String(str, _) => {
+                    if is_string == None {
+                        is_string = Some(true);
+                        string.push_str(str.as_str());
+                    } else if is_string == Some(true) {
+                        string.push_str(str.as_str());
+                    }
+                }
+            });
 
         println!("{}", string);
-    } else if inputs.len() == 2 {
-        let string = inputs.get(1).unwrap().get_value();
+    } else if inputs.len() == 3 {
+        let string = inputs.get(2).unwrap().get_value();
         println!("{}", string);
     } else {
         eprintln!("No string input found.");
@@ -50,22 +69,22 @@ pub fn echo(inputs: TokenVector) {
 
 pub fn type_(inputs: TokenVector) {
     for command in SUPPORTED_COMMANDS.iter() {
-        if inputs[1] == Token::Command(command.to_string()) {
+        if inputs[2] == Token::Command(command.to_string()) {
             print!("{} is a shell builtin\n", command);
             return;
         }
     }
 
-    if let Some(Token::Command(input)) = inputs.get(1) {
+    if let Some(Token::Command(input)) = inputs.get(2) {
         match path::get_exec_path_string(input.as_str()) {
-            Ok(path) => print!("{} is {}\n", inputs[1], path),
-            Err(_) => print!("{} not found\n", inputs[1]),
+            Ok(path) => print!("{} is {}\n", inputs[2], path),
+            Err(_) => print!("{} not found\n", inputs[2]),
         }
     }
 }
 
 pub fn exit(inputs: TokenVector) {
-    if inputs[1] == Token::Command("0".to_string()) {
+    if inputs[2] == Token::Command("0".to_string()) {
         std::process::exit(0);
     } else {
         print!("{}: command not found\n", inputs[0]);
@@ -80,11 +99,11 @@ pub fn pwd(_: TokenVector) {
 }
 
 pub fn cd(inputs: TokenVector) {
-    if inputs.len() < 2 {
+    if inputs.len() < 3 {
         print!("cd: missing argument\n");
         return;
     }
-    match inputs.get(1) {
+    match inputs.get(2) {
         Some(Token::Command(cmd)) => {
             match cmd.as_str() {
                 "~" => {
