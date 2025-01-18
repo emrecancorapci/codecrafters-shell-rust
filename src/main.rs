@@ -7,7 +7,7 @@ use std::{
 use shell_starter_rust::{
     commands::{self, ICommand},
     helpers::path::get_exec_path,
-    input_parser::{Input, InputParser},
+    tokenizer::{Tokenizer, Token},
 };
 
 fn main() {
@@ -36,7 +36,7 @@ fn handle_input(input: &String, commands: &HashMap<String, Box<ICommand>>) {
         return println!("");
     }
 
-    let mut input_parser = InputParser::new();
+    let mut input_parser = Tokenizer::new();
     let input = input.trim().to_string();
 
     let parsed_input = input_parser.parse(input);
@@ -57,7 +57,7 @@ fn handle_input(input: &String, commands: &HashMap<String, Box<ICommand>>) {
     let first_input = first_input.unwrap();
 
     match first_input {
-        Input::Command(input_cmd) => {
+        Token::Command(input_cmd) => {
             let cmd = commands.get(input_cmd);
 
             if cmd.is_none() {

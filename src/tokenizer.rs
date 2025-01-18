@@ -1,29 +1,9 @@
-use std::fmt::Display;
 #[allow(unused_assignments)]
 use std::io::{Error, ErrorKind};
 
-#[derive(PartialEq, Eq, Debug)]
-pub enum Input {
-    Command(String),
-    Argument(String, bool),
-    String(String, bool),
-}
+pub mod token;
 
-impl Input {
-    pub fn get_value(&self) -> String {
-        match self{
-            Input::Command(val) => val.to_string(),
-            Input::Argument(val, _) => val.to_string(),
-            Input::String(val, _) => val.to_string(),
-        }
-    }
-}
-
-impl Display for Input {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
-    }
-}
+pub use token::Token;
 
 #[derive(PartialEq, Eq)]
 enum ParseMode {
@@ -35,22 +15,22 @@ enum ParseMode {
     DoubleDashArg,
 }
 
-pub struct InputParser {
+pub struct Tokenizer {
     temp: String,
     mode: ParseMode,
-    result: Vec<Input>,
+    result: Vec<Token>,
 }
 
-impl InputParser {
-    pub fn new() -> InputParser {
-        InputParser {
+impl Tokenizer {
+    pub fn new() -> Tokenizer {
+        Tokenizer {
             temp: String::new(),
             mode: ParseMode::None,
             result: Vec::new(),
         }
     }
 
-    pub fn parse(&mut self, str: String) -> Result<&Vec<Input>, Error> {
+    pub fn parse(&mut self, str: String) -> Result<&Vec<Token>, Error> {
         let mut iter = str.chars().into_iter().enumerate().peekable();
 
         while let Some((i, ch)) = iter.next() {
@@ -145,17 +125,17 @@ impl InputParser {
     fn push_input(&mut self) {
         match self.mode {
             ParseMode::None => panic!("This shouldn't have happened!"),
-            ParseMode::Value => self.result.push(Input::Command(self.temp.to_string())),
+            ParseMode::Value => self.result.push(Token::Command(self.temp.to_string())),
             ParseMode::StringSingle => self
                 .result
-                .push(Input::String(self.temp.to_string(), false)),
-            ParseMode::StringDouble => self.result.push(Input::String(self.temp.to_string(), true)),
+                .push(Token::String(self.temp.to_string(), false)),
+            ParseMode::StringDouble => self.result.push(Token::String(self.temp.to_string(), true)),
             ParseMode::SingleDashArg => self
                 .result
-                .push(Input::Argument(self.temp.to_string(), false)),
+                .push(Token::Argument(self.temp.to_string(), false)),
             ParseMode::DoubleDashArg => self
                 .result
-                .push(Input::Argument(self.temp.to_string(), true)),
+                .push(Token::Argument(self.temp.to_string(), true)),
         }
         self.temp = String::new();
         self.mode = ParseMode::None;

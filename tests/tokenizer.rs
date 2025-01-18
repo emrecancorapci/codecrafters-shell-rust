@@ -1,16 +1,16 @@
-use shell_starter_rust::input_parser::{Input, InputParser};
+use shell_starter_rust::tokenizer::{Token, Tokenizer};
 
 #[test]
 fn hello_world() {
     let test_string = "hello world".to_string();
     let expected_result = vec![
-        Input::Command("hello".to_string()),
-        Input::Command("world".to_string()),
+        Token::Command("hello".to_string()),
+        Token::Command("world".to_string()),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -25,13 +25,13 @@ fn hello_world() {
 fn spacey_hello_world() {
     let test_string = "hello                 world".to_string();
     let expected_result = vec![
-        Input::Command("hello".to_string()),
-        Input::Command("world".to_string()),
+        Token::Command("hello".to_string()),
+        Token::Command("world".to_string()),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -46,13 +46,13 @@ fn spacey_hello_world() {
 fn echo_hello_world_single_quote() {
     let test_string = "echo 'example test'".to_string();
     let expected_result = vec![
-        Input::Command("echo".to_string()),
-        Input::String("example test".to_string(), false),
+        Token::Command("echo".to_string()),
+        Token::String("example test".to_string(), false),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -67,13 +67,13 @@ fn echo_hello_world_single_quote() {
 fn echo_hello_world_double_quote() {
     let test_string = "echo \"hello world\"".to_string();
     let expected_result = vec![
-        Input::Command("echo".to_string()),
-        Input::String("hello world".to_string(), true),
+        Token::Command("echo".to_string()),
+        Token::String("hello world".to_string(), true),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -88,13 +88,13 @@ fn echo_hello_world_double_quote() {
 fn spacey_echo_hello_world() {
     let test_string = "echo \"hello                   world\"".to_string();
     let expected_result = vec![
-        Input::Command("echo".to_string()),
-        Input::String("hello                   world".to_string(), true),
+        Token::Command("echo".to_string()),
+        Token::String("hello                   world".to_string(), true),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -109,13 +109,13 @@ fn spacey_echo_hello_world() {
 fn double_inside_single_quote() {
     let test_string = "echo '\"hello world\"'".to_string();
     let expected_result = vec![
-        Input::Command("echo".to_string()),
-        Input::String("\"hello world\"".to_string(), false),
+        Token::Command("echo".to_string()),
+        Token::String("\"hello world\"".to_string(), false),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -130,13 +130,13 @@ fn double_inside_single_quote() {
 fn single_inside_double_quote() {
     let test_string = "echo \"'hello world'\"".to_string();
     let expected_result = vec![
-        Input::Command("echo".to_string()),
-        Input::String("'hello world'".to_string(), true),
+        Token::Command("echo".to_string()),
+        Token::String("'hello world'".to_string(), true),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -151,14 +151,14 @@ fn single_inside_double_quote() {
 fn single_dash_argument() {
     let test_string = "echo -s 'hello world'".to_string();
     let expected_result = vec![
-        Input::Command("echo".to_string()),
-        Input::Argument("s".to_string(), false),
-        Input::String("hello world".to_string(), false),
+        Token::Command("echo".to_string()),
+        Token::Argument("s".to_string(), false),
+        Token::String("hello world".to_string(), false),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
@@ -173,14 +173,14 @@ fn single_dash_argument() {
 fn double_dash_argument() {
     let test_string = "echo --silent 'hello world'".to_string();
     let expected_result = vec![
-        Input::Command("echo".to_string()),
-        Input::Argument("silent".to_string(), true),
-        Input::String("hello world".to_string(), false),
+        Token::Command("echo".to_string()),
+        Token::Argument("silent".to_string(), true),
+        Token::String("hello world".to_string(), false),
     ];
 
-    let mut parser = InputParser::new();
+    let mut tokenizer = Tokenizer::new();
 
-    match parser.parse(test_string) {
+    match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
             assert_vec_eq(parsed_vector, &expected_result);
         }
