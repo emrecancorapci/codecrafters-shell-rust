@@ -1,9 +1,7 @@
 #[allow(unused_assignments)]
 use std::io::{Error, ErrorKind};
 
-pub mod token;
-
-pub use token::Token;
+use super::token::Token;
 
 #[derive(PartialEq, Eq)]
 enum ParseMode {

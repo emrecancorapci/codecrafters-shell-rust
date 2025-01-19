@@ -1,13 +1,11 @@
 use std::{
-    collections::HashMap,
     io::{self, Write},
     process::Command,
 };
 
 use shell_starter_rust::{
-    commands::{self, ICommand},
-    helpers::path::get_exec_path,
-    tokenizer::{Tokenizer, Token},
+    commands::{self, CommandMap},
+    shell::{path::get_exec_path, Token, Tokenizer},
 };
 
 fn main() {
@@ -24,39 +22,37 @@ fn main() {
             Ok(_) => {
                 handle_input(&input, &commands);
             }
-            Err(error) => println!("error: {}", error),
+            Err(error) => eprintln!("error: {}", error),
         }
 
         input.clear();
     }
 }
 
-fn handle_input(input: &String, commands: &HashMap<String, Box<ICommand>>) {
+fn handle_input(input: &String, commands: &CommandMap) {
     if input.is_empty() {
         return println!("");
     }
 
-    let mut input_parser = Tokenizer::new();
+    let mut tokenizer = Tokenizer::new();
     let input = input.trim().to_string();
 
-    let parsed_input = input_parser.parse(input);
+    let token_result = tokenizer.parse(input);
 
-    if parsed_input.is_err() {
-        eprintln!("{}", parsed_input.unwrap_err());
+    if token_result.is_err() {
+        eprintln!("{}", token_result.unwrap_err());
         return;
     }
 
-    let input = parsed_input.unwrap();
-    let first_input = input.first();
+    let tokens = token_result.unwrap();
+    let command_token = tokens.first();
 
-    if first_input.is_none() {
+    if command_token.is_none() {
         println!("");
         return;
     }
 
-    let first_input = first_input.unwrap();
-
-    match first_input {
+    match command_token.unwrap() {
         Token::Command(input_cmd) => {
             let cmd = commands.get(input_cmd);
 
@@ -65,21 +61,28 @@ fn handle_input(input: &String, commands: &HashMap<String, Box<ICommand>>) {
 
                 if path.is_err() {
                     println!("{}: command not found", input_cmd);
+                    return;
                 }
 
-                let input_array = input
+                let input_array = tokens
                     .iter()
                     .skip(1)
                     .map(|i| i.get_value())
                     .collect::<Vec<String>>();
 
-                Command::new(path.unwrap())
+                if Command::new(path.unwrap())
                     .args(input_array.iter())
                     .status()
-                    .expect("failed to execute process");
+                    .is_err()
+                {
+                    eprintln!("exec not found")
+                }
             }
 
-            cmd.unwrap()(input);
+            match cmd.unwrap().as_ref().cmd(tokens) {
+                Ok(response) => println!("{}", response),
+                Err(err) => eprintln!("{}", err),
+            }
         }
         _ => {}
     }

@@ -1,0 +1,55 @@
+use std::io::{Error, ErrorKind};
+
+use crate::shell::{path, Command, Token};
+
+use super::SUPPORTED_COMMANDS;
+
+pub struct Type {}
+
+impl Command for Type {
+    fn cmd(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
+        if tokens.len() < 3 {
+            return Err(Error::new(
+                ErrorKind::InvalidInput,
+                "This command needs argument.",
+            ));
+        }
+
+        for command in SUPPORTED_COMMANDS.iter() {
+            if tokens.get(2) == Some(&Token::Command(command.to_string())) {
+                return Ok(format!("{} is a shell builtin\n", command));
+            }
+        }
+
+        match tokens.get(2) {
+            Some(token) => match token {
+                Token::Space => {
+                    return Err(Error::new(
+                        ErrorKind::UnexpectedEof,
+                        "Third token shouldn't be a space. Fix this.",
+                    ))
+                }
+                Token::Command(input) => match path::get_exec_path_string(input.as_str()) {
+                    Ok(path) => return Ok(format!("{} is {}\n", input, path)),
+                    Err(_) => {
+                        return Err(Error::new(
+                            ErrorKind::InvalidInput,
+                            format!("{} not found\n", input),
+                        ))
+                    }
+                },
+                Token::Argument(_, _) => todo!(),
+                Token::String(input, _) => match path::get_exec_path_string(input.as_str()) {
+                    Ok(path) => return Ok(format!("{} is {}\n", input, path)),
+                    Err(_) => {
+                        return Err(Error::new(
+                            ErrorKind::InvalidInput,
+                            format!("{} not found\n", input),
+                        ))
+                    }
+                },
+            },
+            None => todo!(),
+        }
+    }
+}

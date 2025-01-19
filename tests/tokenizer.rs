@@ -1,4 +1,4 @@
-use shell_starter_rust::tokenizer::{Token, Tokenizer};
+use shell_starter_rust::shell::{Token, Tokenizer};
 
 #[test]
 fn hello_world() {
