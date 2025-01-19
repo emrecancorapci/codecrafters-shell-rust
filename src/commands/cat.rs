@@ -1,4 +1,7 @@
-use std::{fs, io::{Error, ErrorKind}};
+use std::{
+    fs,
+    io::{Error, ErrorKind},
+};
 
 use crate::shell::{Command, Token};
 
@@ -10,14 +13,37 @@ impl Command for Cat {
             return Err(Error::new(ErrorKind::InvalidInput, "cd: missing argument"));
         }
 
-        match tokens.get(2) {
-            Some(Token::Command(cmd)) => {
-                return fs::read_to_string(cmd);
-            },
-            Some(Token::String(str, _)) => {
-                return fs::read_to_string(str);
-            },
-            _ => todo!(),
+        let mut response = String::new();
+
+        let mut iter = tokens.iter().skip(2).enumerate();
+
+        while let Some((_index, token)) = iter.next() {
+            match token {
+                Token::Command(cmd) => {
+                    let file_content = fs::read_to_string(cmd);
+
+                    if file_content.is_err() {
+                        return Err(Error::new(ErrorKind::InvalidInput, "cat: file not found"));
+                    } else {
+                        response.push_str(file_content.unwrap().as_str());
+                    }
+                }
+                Token::String(str, _) => {
+                    let file_content = fs::read_to_string(str);
+
+                    if file_content.is_err() {
+                        return Err(Error::new(ErrorKind::InvalidInput, "cat: file not found"));
+                    } else {
+                        response.push_str(file_content.unwrap().as_str());
+                    }
+                }
+                Token::Space => {}
+                _ => {
+                    eprintln!("{} This should not happened", token);
+                }
+            }
         }
+
+        return Ok(response);
     }
 }
