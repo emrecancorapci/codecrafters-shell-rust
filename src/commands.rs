@@ -1,3 +1,4 @@
+use cat::Cat;
 use cd::Cd;
 use echo::Echo;
 use exit::Exit;
@@ -26,5 +27,6 @@ pub fn get_commands() -> CommandMap {
     map.insert("exit".to_string(), Box::new(Exit {}));
     map.insert("pwd".to_string(), Box::new(Pwd {}));
     map.insert("cd".to_string(), Box::new(Cd {}));
+    map.insert("cat".to_string(), Box::new(Cat {}));
     map
 }

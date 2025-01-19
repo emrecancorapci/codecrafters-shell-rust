@@ -59,7 +59,7 @@ impl Tokenizer {
                     }
                 },
                 ParseMode::Value => match ch {
-                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => self.temp.push(ch),
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' | '.' => self.temp.push(ch),
                     ' ' => {
                         self.push_input();
                         self.push_space();
@@ -84,7 +84,7 @@ impl Tokenizer {
                     ' ' => {
                         self.push_input();
                         self.push_space();
-                    },
+                    }
                     _ => {
                         return Err(Error::new(
                             ErrorKind::InvalidInput,
@@ -97,7 +97,7 @@ impl Tokenizer {
                     ' ' => {
                         self.push_input();
                         self.push_space();
-                    },
+                    }
                     _ => {
                         return Err(Error::new(
                             ErrorKind::InvalidInput,
@@ -152,7 +152,6 @@ impl Tokenizer {
 
     fn push_space(&mut self) {
         if self.tokens.last() != Some(&Token::Space) {
-
             self.tokens.push(Token::Space);
         }
     }
