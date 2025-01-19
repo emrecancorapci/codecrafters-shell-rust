@@ -27,7 +27,7 @@ impl Command for Cd {
 
                         if env::set_current_dir(env::var("HOME").unwrap()).is_err() {
                             return Err(Error::new(
-                                ErrorKind::NotADirectory,
+                                ErrorKind::InvalidData,
                                 format!("{}: No such file or directory", env::var("HOME").unwrap()),
                             ));
                         }
@@ -36,7 +36,7 @@ impl Command for Cd {
                     path => {
                         if env::set_current_dir(&path).is_err() {
                             return Err(Error::new(
-                                ErrorKind::NotADirectory,
+                                ErrorKind::InvalidData,
                                 format!("{}: No such file or directory", &path),
                             ));
                         }

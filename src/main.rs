@@ -1,5 +1,5 @@
 use std::{
-    io::{self, Write},
+    io::{self, Error, Write},
     process::Command,
 };
 
@@ -13,56 +13,38 @@ fn main() {
 
     let stdin = io::stdin();
     let mut input = String::new();
+    print!("$ ");
 
     loop {
-        print!("$ ");
         io::stdout().flush().unwrap();
 
-        match stdin.read_line(&mut input) {
-            Ok(_) => {
-                handle_input(&input, &commands);
+        if let Err(err) = stdin.read_line(&mut input) {
+            eprint!("error: {}", err);
+        } else if input.is_empty() {
+            print!("\n$ ");
+        } else {
+            match handle_input(&input, &commands) {
+                Ok(output) => print!("{}\n$ ", output),
+                Err(err) => eprint!("{}\n$ ", err),
             }
-            Err(error) => eprintln!("error: {}", error),
         }
 
         input.clear();
     }
 }
 
-fn handle_input(input: &String, commands: &CommandMap) {
-    if input.is_empty() {
-        return println!("");
-    }
-
+fn handle_input(input: &String, commands: &CommandMap) -> Result<String, Error> {
     let mut tokenizer = Tokenizer::new();
     let input = input.trim().to_string();
 
-    let token_result = tokenizer.parse(input);
+    let tokens = tokenizer.parse(input)?;
 
-    if token_result.is_err() {
-        eprintln!("{}", token_result.unwrap_err());
-        return;
-    }
-
-    let tokens = token_result.unwrap();
-    let command_token = tokens.first();
-
-    if command_token.is_none() {
-        println!("");
-        return;
-    }
-
-    match command_token.unwrap() {
-        Token::Command(input_cmd) => {
+    match tokens.first() {
+        Some(Token::Command(input_cmd)) => {
             let cmd = commands.get(input_cmd);
 
             if cmd.is_none() {
-                let path = get_exec_path(input_cmd.as_str());
-
-                if path.is_err() {
-                    println!("{}: command not found", input_cmd);
-                    return;
-                }
+                let path = get_exec_path(input_cmd.as_str())?;
 
                 let input_array = tokens
                     .iter()
@@ -70,20 +52,14 @@ fn handle_input(input: &String, commands: &CommandMap) {
                     .map(|i| i.get_value())
                     .collect::<Vec<String>>();
 
-                if Command::new(path.unwrap())
-                    .args(input_array.iter())
-                    .status()
-                    .is_err()
-                {
-                    eprintln!("exec not found")
-                }
+                Command::new(path).args(input_array.iter()).status()?;
+
+                return Ok(String::new());
             }
 
-            match cmd.unwrap().as_ref().cmd(tokens) {
-                Ok(response) => println!("{}", response),
-                Err(err) => eprintln!("{}", err),
-            }
+            return cmd.unwrap().as_ref().cmd(tokens);
         }
-        _ => {}
+        Some(_) => return Err(Error::new(io::ErrorKind::InvalidInput, "error: invalid input")),
+        None => return Ok(String::new()),
     }
 }
