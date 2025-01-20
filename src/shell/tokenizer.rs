@@ -44,7 +44,9 @@ impl Tokenizer {
                             self.mode = ParseMode::SingleDashArg
                         }
                     }
-                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' if self.temp.is_empty() => {
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '.' | '/' | '~'
+                        if self.temp.is_empty() =>
+                    {
                         self.mode = ParseMode::Value;
                         self.temp.push(ch);
                     }
@@ -59,7 +61,7 @@ impl Tokenizer {
                     }
                 },
                 ParseMode::Value => match ch {
-                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' | '.' => self.temp.push(ch),
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' | '.' | '/' => self.temp.push(ch),
                     ' ' => {
                         self.push_input();
                         self.push_space();

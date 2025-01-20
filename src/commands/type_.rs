@@ -17,7 +17,7 @@ impl Command for Type {
 
         for command in SUPPORTED_COMMANDS.iter() {
             if tokens.get(2) == Some(&Token::Command(command.to_string())) {
-                return Ok(format!("{} is a shell builtin\n", command));
+                return Ok(format!("{} is a shell builtin", command));
             }
         }
 
@@ -30,21 +30,21 @@ impl Command for Type {
                     ))
                 }
                 Token::Command(input) => match path::get_exec_path_string(input.as_str()) {
-                    Ok(path) => return Ok(format!("{} is {}\n", input, path)),
+                    Ok(path) => return Ok(format!("{} is {}", input, path)),
                     Err(_) => {
                         return Err(Error::new(
                             ErrorKind::InvalidInput,
-                            format!("{} not found\n", input),
+                            format!("{} not found", input),
                         ))
                     }
                 },
                 Token::Argument(_, _) => todo!(),
                 Token::String(input, _) => match path::get_exec_path_string(input.as_str()) {
-                    Ok(path) => return Ok(format!("{} is {}\n", input, path)),
+                    Ok(path) => return Ok(format!("{} is {}", input, path)),
                     Err(_) => {
                         return Err(Error::new(
                             ErrorKind::InvalidInput,
-                            format!("{} not found\n", input),
+                            format!("{} not found", input),
                         ))
                     }
                 },

@@ -19,12 +19,18 @@ fn main() {
         io::stdout().flush().unwrap();
 
         if let Err(err) = stdin.read_line(&mut input) {
-            eprint!("error: {}", err);
+            eprint!("error: {}\n$ ", err);
         } else if input.is_empty() {
             print!("\n$ ");
         } else {
             match handle_input(&input, &commands) {
-                Ok(output) => print!("{}\n$ ", output),
+                Ok(output) => {
+                    if output.is_empty() {
+                        print!("$ ");
+                    } else {
+                        print!("{}\n$ ", output)
+                    }
+                }
                 Err(err) => eprint!("{}\n$ ", err),
             }
         }
@@ -59,7 +65,12 @@ fn handle_input(input: &String, commands: &CommandMap) -> Result<String, Error> 
 
             return cmd.unwrap().as_ref().cmd(tokens);
         }
-        Some(_) => return Err(Error::new(io::ErrorKind::InvalidInput, "error: invalid input")),
+        Some(_) => {
+            return Err(Error::new(
+                io::ErrorKind::InvalidInput,
+                "error: invalid input",
+            ))
+        }
         None => return Ok(String::new()),
     }
 }

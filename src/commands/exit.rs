@@ -11,7 +11,7 @@ impl Command for Exit {
         } else {
             return Err(Error::new(
                 ErrorKind::InvalidInput,
-                format!("{}: command not found\n", tokens[0]),
+                format!("{}: command not found", tokens[0]),
             ));
         }
     }
