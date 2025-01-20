@@ -46,7 +46,7 @@ fn handle_input(input: &String, commands: &CommandMap) -> Result<String, Error> 
     let tokens = tokenizer.parse(input)?;
 
     match tokens.first() {
-        Some(Token::Command(input_cmd)) => {
+        Some(Token::Command(input_cmd) | Token::String(input_cmd, _))  => {
             let cmd = commands.get(input_cmd);
 
             if cmd.is_none() {
