@@ -19,7 +19,6 @@ impl Command for Echo {
         }
 
         let mut string = String::new();
-        let mut is_string: Option<bool> = None;
 
         tokens
             .iter()
@@ -28,34 +27,12 @@ impl Command for Echo {
             .for_each(|(i, t)| match t {
                 Token::Space => {
                     if i > 0 {
-                        match is_string {
-                            Some(true) => {
-                                string.push(' ');
-                            }
-                            Some(false) => {
-                                string.push(' ');
-                            }
-                            None => {}
-                        }
+                        string.push(' ');
                     }
                 }
-                Token::Command(cmd) => match is_string {
-                    Some(true) => {}
-                    Some(false) => string.push_str(cmd.as_str()),
-                    None => {
-                        is_string = Some(false);
-                        string.push_str(cmd.as_str());
-                    }
-                },
+                Token::Command(cmd) => string.push_str(cmd.as_str()),
                 Token::Argument(_, _) => {}
-                Token::String(str, _) => {
-                    if is_string == None {
-                        is_string = Some(true);
-                        string.push_str(str.as_str());
-                    } else if is_string == Some(true) {
-                        string.push_str(str.as_str());
-                    }
-                }
+                Token::String(str, _) => string.push_str(str.as_str()),
             });
 
         return Ok(string);

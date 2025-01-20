@@ -16,6 +16,7 @@ enum ParseMode {
 pub struct Tokenizer {
     temp: String,
     mode: ParseMode,
+    sub_mode: ParseMode,
     tokens: Vec<Token>,
 }
 
@@ -24,6 +25,7 @@ impl Tokenizer {
         Tokenizer {
             temp: String::new(),
             mode: ParseMode::None,
+            sub_mode: ParseMode::None,
             tokens: Vec::new(),
         }
     }
@@ -104,6 +106,35 @@ impl Tokenizer {
                 },
                 ParseMode::StringDouble => match ch {
                     '"' => self.push_input(),
+                    '\\' => {
+                        if self.sub_mode == ParseMode::StringSingle {
+                            self.temp.push(ch);
+                            continue;
+                        }
+
+                        match iter.peek() {
+                            Some((_, '\\' | '$' | '"')) => {
+                                let (_index, ch) = iter.next().unwrap();
+
+                                self.temp.push(ch)
+                            }
+                            Some(_) => {
+                                self.temp.push(ch);
+                            }
+                            None => todo!(),
+                        }
+                    }
+                    '\'' => match self.sub_mode {
+                        ParseMode::None => {
+                            self.temp.push(ch);
+                            self.sub_mode = ParseMode::StringSingle;
+                        }
+                        ParseMode::StringSingle => {
+                            self.temp.push(ch);
+                            self.sub_mode = ParseMode::None;
+                        }
+                        _ => todo!(),
+                    },
                     _ => self.temp.push(ch),
                 },
                 ParseMode::SingleDashArg => match ch {
@@ -175,6 +206,7 @@ impl Tokenizer {
         }
         self.temp = String::new();
         self.mode = ParseMode::None;
+        self.sub_mode = ParseMode::None;
     }
 
     fn push_space(&mut self) {
