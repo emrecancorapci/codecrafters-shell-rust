@@ -17,13 +17,13 @@ pub fn get_exec_path_string(exec: &str) -> Result<String, Error> {
 }
 
 pub fn get_exec_path(exec: &str) -> Result<PathBuf, Error> {
-    let binding = env::var("PATH").unwrap();
-    let paths: Vec<&str> = binding.split(":").collect();
-    let cmd_path = Path::new(&paths[0]).join(exec);
+    for path in env::var("PATH").unwrap().split(":") {
+        let cmd_path = Path::new(path).join(exec);
 
-    if cmd_path.exists() {
-        return Ok(cmd_path);
-    } else {
-        Err(Error::new(ErrorKind::NotFound, format!("{}: command not found", exec)))
+        if cmd_path.exists() {
+            return Ok(cmd_path);
+        }
     }
+
+    Err(Error::new(ErrorKind::NotFound, format!("{}: command not found", exec)))
 }

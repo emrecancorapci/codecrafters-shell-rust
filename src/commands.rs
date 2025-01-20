@@ -1,4 +1,3 @@
-use cat::Cat;
 use cd::Cd;
 use echo::Echo;
 use exit::Exit;
@@ -14,9 +13,8 @@ pub mod type_;
 pub mod exit;
 pub mod pwd;
 pub mod cd;
-pub mod cat;
 
-pub const SUPPORTED_COMMANDS: [&str; 6] = ["echo", "type", "exit", "pwd", "cd", "cat"];
+pub const SUPPORTED_COMMANDS: [&str; 5] = ["echo", "type", "exit", "pwd", "cd"];
 
 pub type CommandMap = HashMap<String, Box<dyn Command>>;
 
@@ -27,6 +25,5 @@ pub fn get_commands() -> CommandMap {
     map.insert("exit".to_string(), Box::new(Exit {}));
     map.insert("pwd".to_string(), Box::new(Pwd {}));
     map.insert("cd".to_string(), Box::new(Cd {}));
-    map.insert("cat".to_string(), Box::new(Cat {}));
     map
 }

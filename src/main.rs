@@ -50,15 +50,15 @@ fn handle_input(input: &String, commands: &CommandMap) -> Result<String, Error> 
             let cmd = commands.get(input_cmd);
 
             if cmd.is_none() {
-                let path = get_exec_path(input_cmd.as_str())?;
+                get_exec_path(input_cmd.as_str())?;
 
                 let input_array = tokens
                     .iter()
-                    .skip(1)
-                    .map(|i| i.get_value())
-                    .collect::<Vec<String>>();
+                    .skip(2)
+                    .filter(|i| !matches!(i, Token::Space))
+                    .map(|i| i.get_value());
 
-                Command::new(path).args(input_array.iter()).status()?;
+                Command::new(input_cmd).args(input_array).status()?;
 
                 return Ok(String::new());
             }
