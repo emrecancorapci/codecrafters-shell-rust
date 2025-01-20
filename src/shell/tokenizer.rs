@@ -36,6 +36,19 @@ impl Tokenizer {
                 ParseMode::None => match ch {
                     '\'' => self.mode = ParseMode::StringSingle,
                     '"' => self.mode = ParseMode::StringDouble,
+                    '\\' => {
+                        self.mode = ParseMode::Value;
+                        let ch = iter.peek();
+
+                        match ch {
+                            Some(_) => {
+                                let (_index, ch) = iter.next().unwrap();
+
+                                self.temp.push(ch)
+                            }
+                            None => todo!(),
+                        }
+                    }
                     '-' => {
                         if iter.peek() == Some(&(i + 1, '-')) {
                             iter.next();
@@ -62,6 +75,18 @@ impl Tokenizer {
                 },
                 ParseMode::Value => match ch {
                     'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' | '.' | '/' => self.temp.push(ch),
+                    '\\' => {
+                        let ch = iter.peek();
+
+                        match ch {
+                            Some(_) => {
+                                let (_index, ch) = iter.next().unwrap();
+
+                                self.temp.push(ch)
+                            }
+                            None => todo!(),
+                        }
+                    }
                     ' ' => {
                         self.push_input();
                         self.push_space();
