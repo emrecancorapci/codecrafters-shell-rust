@@ -6,7 +6,7 @@ use type_::Type;
 
 use std::collections::HashMap;
 
-use crate::shell::Command;
+use crate::tokenizer::Command;
 
 pub mod echo;
 pub mod type_;

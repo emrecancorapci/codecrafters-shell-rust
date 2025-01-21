@@ -1,10 +1,13 @@
-#[allow(unused_assignments)]
-use std::io::{Error, ErrorKind};
+use std::{
+    io::{Error, ErrorKind},
+    iter::{Enumerate, Peekable},
+    str::Chars,
+};
 
-use super::token::Token;
+use super::{Token, Tokenizer};
 
 #[derive(PartialEq, Eq)]
-enum ParseMode {
+pub(super) enum ParseMode {
     None,
     Value,
     SingleQuote,
@@ -13,26 +16,11 @@ enum ParseMode {
     DoubleDashArg,
 }
 
-pub struct Tokenizer {
-    temp: String,
-    mode: ParseMode,
-    sub_mode: ParseMode,
-    tokens: Vec<Token>,
-}
-
 impl Tokenizer {
-    pub fn new() -> Tokenizer {
-        Tokenizer {
-            temp: String::new(),
-            mode: ParseMode::None,
-            sub_mode: ParseMode::None,
-            tokens: Vec::new(),
-        }
-    }
-
-    pub fn parse(&mut self, str: String) -> Result<&Vec<Token>, Error> {
-        let mut iter = str.chars().into_iter().enumerate().peekable();
-
+    pub fn parse_tokens(
+        &mut self,
+        iter: &mut Peekable<Enumerate<Chars<'_>>>,
+    ) -> Result<Vec<Token>, Error> {
         while let Some((i, ch)) = iter.next() {
             match self.mode {
                 ParseMode::None => match ch {
@@ -59,11 +47,25 @@ impl Tokenizer {
                             self.mode = ParseMode::SingleDashArg
                         }
                     }
-                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '.' | '/' | '~'
-                        if self.temp.is_empty() =>
-                    {
+                    'a'..='z' | 'A'..='Z' | '_' | '.' | '/' | '~' if self.temp.is_empty() => {
                         self.mode = ParseMode::Value;
                         self.temp.push(ch);
+                    }
+                    '0'..='9' if self.temp.is_empty() => {
+                        let number: u8 = ch.to_digit(10).unwrap() as u8;
+
+                        if let Some((_, '>')) = iter.peek() {
+                            iter.next();
+                            self.parse_redirector(iter, number);
+                            break;
+                        } else {
+                            self.temp.push(ch);
+                            self.mode = ParseMode::Value;
+                        }
+                    }
+                    '>' => {
+                        self.parse_redirector(iter, 1);
+                        break;
                     }
                     ' ' => {
                         self.push_space();
@@ -180,12 +182,40 @@ impl Tokenizer {
                 ))
             }
             ParseMode::None => {
-                return Ok(&self.tokens);
+                return Ok(self.tokens.to_vec());
             }
             _ => {
                 self.push_input();
-                return Ok(&self.tokens);
+                return Ok(self.tokens.to_vec());
             }
+        }
+    }
+
+    fn parse_redirector(&mut self, iter: &mut Peekable<Enumerate<Chars<'_>>>, num: u8) {
+        match iter.peek() {
+            Some((_, '>')) => {
+                iter.next();
+
+                let mut tokenizer: Tokenizer = Tokenizer::new();
+
+                match tokenizer.parse_tokens(iter) {
+                    Ok(tokens) => {
+                        self.redirection_token = Some((Token::Appender(num), tokens.to_vec()))
+                    }
+                    Err(_) => todo!(),
+                }
+            }
+            Some(_) => {
+                let mut tokenizer: Tokenizer = Tokenizer::new();
+
+                match tokenizer.parse_tokens(iter) {
+                    Ok(tokens) => {
+                        self.redirection_token = Some((Token::Redirector(num), tokens.to_vec()))
+                    }
+                    Err(_) => todo!(),
+                }
+            }
+            None => todo!(),
         }
     }
 

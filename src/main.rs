@@ -5,7 +5,7 @@ use std::{
 
 use shell_starter_rust::{
     commands::{self, CommandMap},
-    shell::{path::get_exec_path, Token, Tokenizer},
+    tokenizer::{path::get_exec_path, Token, Tokenizer},
 };
 
 fn main() {

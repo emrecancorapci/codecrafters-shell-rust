@@ -1,4 +1,4 @@
-use shell_starter_rust::shell::{Token, Tokenizer};
+use shell_starter_rust::tokenizer::{Token, Tokenizer};
 
 #[test]
 fn hello_world() {
@@ -197,6 +197,167 @@ fn double_dash_argument() {
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
+            assert!(false);
+        }
+    }
+}
+
+#[test]
+fn redirector() {
+    let test_string = "echo \"hello world\" > \"./hello.md\"".to_string();
+    let expected_result = vec![
+        Token::Value("echo".to_string()),
+        Token::Space,
+        Token::String("hello world".to_string(), true),
+        Token::Space,
+    ];
+
+    let mut tokenizer = Tokenizer::new();
+
+    match tokenizer.parse(test_string) {
+        Ok(parsed_vector) => {
+            assert_vec_eq(&parsed_vector, &expected_result);
+        }
+        Err(err) => {
+            eprintln!("ERR: {}", err);
+            assert!(false);
+        }
+    }
+
+    assert!(tokenizer.is_redirected());
+
+    assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Redirector(1)));
+
+    let expected_redirection = vec![
+        Token::Space,
+        Token::String("./hello.md".to_string(), true),
+    ];
+
+    match tokenizer.get_redirection_tokens() {
+        Some(parsed_vector) => assert_vec_eq(&parsed_vector, &expected_redirection),
+        None => {
+            eprintln!("Redirection not found!");
+            assert!(false);
+        }
+    }
+}
+
+#[test]
+fn redirector_with_number() {
+    let test_string = "echo \"hello world\" 2> \"./hello.md\"".to_string();
+    let expected_result = vec![
+        Token::Value("echo".to_string()),
+        Token::Space,
+        Token::String("hello world".to_string(), true),
+        Token::Space,
+    ];
+
+    let mut tokenizer = Tokenizer::new();
+
+    match tokenizer.parse(test_string) {
+        Ok(parsed_vector) => {
+            assert_vec_eq(&parsed_vector, &expected_result);
+        }
+        Err(err) => {
+            eprintln!("ERR: {}", err);
+            assert!(false);
+        }
+    }
+
+    assert!(tokenizer.is_redirected());
+
+    assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Redirector(2)));
+
+    let expected_redirection = vec![
+        Token::Space,
+        Token::String("./hello.md".to_string(), true),
+    ];
+
+    match tokenizer.get_redirection_tokens() {
+        Some(parsed_vector) => assert_vec_eq(&parsed_vector, &expected_redirection),
+        None => {
+            eprintln!("Redirection not found!");
+            assert!(false);
+        }
+    }
+}
+
+
+#[test]
+fn appender() {
+    let test_string = "echo \"hello world\" >> \"./hello.md\"".to_string();
+    let expected_result = vec![
+        Token::Value("echo".to_string()),
+        Token::Space,
+        Token::String("hello world".to_string(), true),
+        Token::Space,
+    ];
+
+    let mut tokenizer = Tokenizer::new();
+
+    match tokenizer.parse(test_string) {
+        Ok(parsed_vector) => {
+            assert_vec_eq(&parsed_vector, &expected_result);
+        }
+        Err(err) => {
+            eprintln!("ERR: {}", err);
+            assert!(false);
+        }
+    }
+
+    assert!(tokenizer.is_redirected());
+
+    assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Appender(1)));
+
+    let expected_redirection = vec![
+        Token::Space,
+        Token::String("./hello.md".to_string(), true),
+    ];
+
+    match tokenizer.get_redirection_tokens() {
+        Some(parsed_vector) => assert_vec_eq(&parsed_vector, &expected_redirection),
+        None => {
+            eprintln!("Redirection not found!");
+            assert!(false);
+        }
+    }
+}
+
+#[test]
+fn appender_with_number() {
+    let test_string = "echo \"hello world\" 2>> \"./hello.md\"".to_string();
+    let expected_result = vec![
+        Token::Value("echo".to_string()),
+        Token::Space,
+        Token::String("hello world".to_string(), true),
+        Token::Space,
+    ];
+
+    let mut tokenizer = Tokenizer::new();
+
+    match tokenizer.parse(test_string) {
+        Ok(parsed_vector) => {
+            assert_vec_eq(&parsed_vector, &expected_result);
+        }
+        Err(err) => {
+            eprintln!("ERR: {}", err);
+            assert!(false);
+        }
+    }
+
+    assert!(tokenizer.is_redirected());
+
+    assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Appender(2)));
+
+    let expected_redirection = vec![
+        Token::Space,
+        Token::String("./hello.md".to_string(), true),
+    ];
+
+    match tokenizer.get_redirection_tokens() {
+        Some(parsed_vector) => assert_vec_eq(&parsed_vector, &expected_redirection),
+        None => {
+            eprintln!("Redirection not found!");
             assert!(false);
         }
     }

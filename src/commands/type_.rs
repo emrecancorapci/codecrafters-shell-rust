@@ -1,6 +1,6 @@
 use std::io::{Error, ErrorKind};
 
-use crate::shell::{path, Command, Token};
+use crate::tokenizer::{path, Command, Token};
 
 use super::SUPPORTED_COMMANDS;
 

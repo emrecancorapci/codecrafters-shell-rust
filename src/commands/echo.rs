@@ -1,6 +1,6 @@
 use std::io::{Error, ErrorKind};
 
-use crate::shell::{Command, Token};
+use crate::tokenizer::{Command, Token};
 
 pub struct Echo {}
 
