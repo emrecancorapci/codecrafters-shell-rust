@@ -1,6 +1,6 @@
 use std::env;
 
-use crate::tokenizer::{Command, Token};
+use shell_starter_rust::tokenizer::{Command, Token};
 
 pub struct Pwd {}
 

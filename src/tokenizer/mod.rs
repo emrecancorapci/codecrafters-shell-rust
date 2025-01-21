@@ -3,8 +3,8 @@ use std::io::Error;
 pub mod path;
 
 mod command;
-mod token;
 mod parser;
+mod token;
 
 pub use command::Command;
 use parser::ParseMode;
@@ -45,8 +45,20 @@ impl Tokenizer {
         &self.tokens
     }
 
-    pub fn is_redirected(&self) -> bool {
-        self.redirection_token.is_some()
+    pub fn is_redirect(&self) -> bool {
+        matches!(self.redirection_token, Some((Token::Redirector(_), _)))
+    }
+
+    pub fn is_append(&self) -> bool {
+        matches!(self.redirection_token, Some((Token::Appender(_), _)))
+    }
+
+    pub fn is_redirect_err(&self) -> bool {
+        matches!(self.redirection_token, Some((Token::Redirector(2), _)))
+    }
+
+    pub fn is_append_err(&self) -> bool {
+        matches!(self.redirection_token, Some((Token::Appender(2), _)))
     }
 
     pub fn get_redirection_type(&self) -> Option<&Token> {
@@ -56,17 +68,10 @@ impl Tokenizer {
         }
     }
 
-    pub fn get_redirection_tokens(&self) -> Option<Vec<Token>> {
+    pub fn get_redirection_tokens(&self) -> Vec<Token> {
         match self.redirection_token {
-            Some((_, ref tokens)) => Some(tokens.to_vec()),
-            None => None,
-        }
-    }
-
-    pub fn get_redirection_tokens_ref(&self) -> Option<&Vec<Token>> {
-        match self.redirection_token {
-            Some((_, ref tokens)) => Some(&tokens),
-            None => None,
+            Some((_, ref tokens)) => tokens.to_vec(),
+            None => vec![],
         }
     }
 }

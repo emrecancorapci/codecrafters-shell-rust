@@ -3,7 +3,7 @@ use std::{
     io::{Error, ErrorKind},
 };
 
-use crate::tokenizer::{Command, Token};
+use shell_starter_rust::tokenizer::{Command, Token};
 
 pub struct Cd {}
 

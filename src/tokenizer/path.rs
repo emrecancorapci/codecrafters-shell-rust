@@ -13,7 +13,10 @@ pub fn get_exec_path_string(exec: &str) -> Result<String, Error> {
         }
     }
 
-    Err(Error::new(ErrorKind::NotFound, format!("{}: command not found", exec)))
+    Err(Error::new(
+        ErrorKind::NotFound,
+        format!("{}: command not found", exec),
+    ))
 }
 
 pub fn get_exec_path(exec: &str) -> Result<PathBuf, Error> {
@@ -25,5 +28,8 @@ pub fn get_exec_path(exec: &str) -> Result<PathBuf, Error> {
         }
     }
 
-    Err(Error::new(ErrorKind::NotFound, format!("{}: command not found", exec)))
+    Err(Error::new(
+        ErrorKind::NotFound,
+        format!("{}: command not found", exec),
+    ))
 }

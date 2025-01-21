@@ -224,7 +224,7 @@ fn redirector() {
         }
     }
 
-    assert!(tokenizer.is_redirected());
+    assert!(tokenizer.is_redirect() || tokenizer.is_append());
 
     assert_eq!(
         tokenizer.get_redirection_type(),
@@ -233,16 +233,10 @@ fn redirector() {
 
     let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
-    match tokenizer.get_redirection_tokens() {
-        Some(_) => assert_vec_eq(
-            tokenizer.get_redirection_tokens_ref().unwrap(),
-            &expected_redirection,
-        ),
-        None => {
-            eprintln!("Redirection not found!");
-            assert!(false);
-        }
-    }
+    assert_vec_eq(
+        tokenizer.get_redirection_tokens().as_ref(),
+        &expected_redirection,
+    )
 }
 
 #[test]
@@ -267,7 +261,7 @@ fn redirector_with_number() {
         }
     }
 
-    assert!(tokenizer.is_redirected());
+    assert!(tokenizer.is_redirect() || tokenizer.is_append());
 
     assert_eq!(
         tokenizer.get_redirection_type(),
@@ -276,16 +270,10 @@ fn redirector_with_number() {
 
     let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
-    match tokenizer.get_redirection_tokens() {
-        Some(_) => assert_vec_eq(
-            tokenizer.get_redirection_tokens_ref().unwrap(),
-            &expected_redirection,
-        ),
-        None => {
-            eprintln!("Redirection not found!");
-            assert!(false);
-        }
-    }
+    assert_vec_eq(
+        tokenizer.get_redirection_tokens().as_ref(),
+        &expected_redirection,
+    )
 }
 
 #[test]
@@ -310,22 +298,16 @@ fn appender() {
         }
     }
 
-    assert!(tokenizer.is_redirected());
+    assert!(tokenizer.is_redirect() || tokenizer.is_append());
 
     assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Appender(1)));
 
     let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
-    match tokenizer.get_redirection_tokens() {
-        Some(_) => assert_vec_eq(
-            tokenizer.get_redirection_tokens_ref().unwrap(),
-            &expected_redirection,
-        ),
-        None => {
-            eprintln!("Redirection not found!");
-            assert!(false);
-        }
-    }
+    assert_vec_eq(
+        tokenizer.get_redirection_tokens().as_ref(),
+        &expected_redirection,
+    )
 }
 
 #[test]
@@ -350,22 +332,16 @@ fn appender_with_number() {
         }
     }
 
-    assert!(tokenizer.is_redirected());
+    assert!(tokenizer.is_redirect() || tokenizer.is_append());
 
     assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Appender(2)));
 
     let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
-    match tokenizer.get_redirection_tokens() {
-        Some(_) => assert_vec_eq(
-            tokenizer.get_redirection_tokens_ref().unwrap(),
-            &expected_redirection,
-        ),
-        None => {
-            eprintln!("Redirection not found!");
-            assert!(false);
-        }
-    }
+    assert_vec_eq(
+        tokenizer.get_redirection_tokens().as_ref(),
+        &expected_redirection,
+    )
 }
 
 fn assert_vec_eq<T: std::fmt::Debug + PartialEq>(vec1: &[T], vec2: &[T]) {

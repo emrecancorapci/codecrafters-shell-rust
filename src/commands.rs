@@ -6,13 +6,13 @@ use type_::Type;
 
 use std::collections::HashMap;
 
-use crate::tokenizer::Command;
+use shell_starter_rust::tokenizer::Command;
 
+pub mod cd;
 pub mod echo;
-pub mod type_;
 pub mod exit;
 pub mod pwd;
-pub mod cd;
+pub mod type_;
 
 pub const SUPPORTED_COMMANDS: [&str; 5] = ["echo", "type", "exit", "pwd", "cd"];
 

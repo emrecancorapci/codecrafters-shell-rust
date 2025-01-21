@@ -17,10 +17,7 @@ pub(super) enum ParseMode {
 }
 
 impl Tokenizer {
-    pub fn parse_tokens(
-        &mut self,
-        iter: &mut Peekable<Enumerate<Chars<'_>>>,
-    ) -> Result<(), Error> {
+    pub fn parse_tokens(&mut self, iter: &mut Peekable<Enumerate<Chars<'_>>>) -> Result<(), Error> {
         while let Some((i, ch)) = iter.next() {
             match self.mode {
                 ParseMode::None => match ch {
@@ -200,7 +197,8 @@ impl Tokenizer {
 
                 match tokenizer.parse_tokens(iter) {
                     Ok(_) => {
-                        self.redirection_token = Some((Token::Appender(num), tokenizer.get_tokens().to_vec()))
+                        self.redirection_token =
+                            Some((Token::Appender(num), tokenizer.get_tokens().to_vec()))
                     }
                     Err(_) => todo!(),
                 }
@@ -210,7 +208,8 @@ impl Tokenizer {
 
                 match tokenizer.parse_tokens(iter) {
                     Ok(_) => {
-                        self.redirection_token = Some((Token::Redirector(num), tokenizer.get_tokens().to_vec()))
+                        self.redirection_token =
+                            Some((Token::Redirector(num), tokenizer.get_tokens().to_vec()))
                     }
                     Err(_) => todo!(),
                 }
