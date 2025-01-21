@@ -1,5 +1,5 @@
 use std::{
-    io::{self, Error, Write},
+    io::{self, Error, ErrorKind, Write},
     process::Command,
 };
 
@@ -24,13 +24,8 @@ fn main() {
             print!("\n$ ");
         } else {
             match handle_input(&input, &commands) {
-                Ok(output) => {
-                    if output.is_empty() {
-                        print!("$ ");
-                    } else {
-                        print!("{}\n$ ", output)
-                    }
-                }
+                Ok(output) if output.is_empty() => print!("$ "),
+                Ok(output) => print!("{}\n$ ", output),
                 Err(err) => eprint!("{}\n$ ", err),
             }
         }
@@ -46,7 +41,7 @@ fn handle_input(input: &String, commands: &CommandMap) -> Result<String, Error> 
     let tokens = tokenizer.parse(input)?;
 
     match tokens.first() {
-        Some(Token::Command(input_cmd) | Token::String(input_cmd, _))  => {
+        Some(Token::Value(input_cmd) | Token::String(input_cmd, _)) => {
             let cmd = commands.get(input_cmd);
 
             if cmd.is_none() {
@@ -65,12 +60,7 @@ fn handle_input(input: &String, commands: &CommandMap) -> Result<String, Error> 
 
             return cmd.unwrap().as_ref().cmd(tokens);
         }
-        Some(_) => {
-            return Err(Error::new(
-                io::ErrorKind::InvalidInput,
-                "error: invalid input",
-            ))
-        }
+        Some(_) => return Err(Error::new(ErrorKind::InvalidInput, "error: invalid input")),
         None => return Ok(String::new()),
     }
 }

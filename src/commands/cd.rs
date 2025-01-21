@@ -14,8 +14,8 @@ impl Command for Cd {
         }
 
         match tokens.get(2) {
-            Some(Token::Command(cmd)) => {
-                match cmd.as_str() {
+            Some(Token::Value(path)) => {
+                match path.as_str() {
                     "~" => {
                         // Doesn't work on windows. There is a crate called homedir that can be used to get the home directory.
                         if env::var("HOME").is_err() {

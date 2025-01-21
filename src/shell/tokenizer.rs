@@ -7,8 +7,8 @@ use super::token::Token;
 enum ParseMode {
     None,
     Value,
-    StringSingle,
-    StringDouble,
+    SingleQuote,
+    DoubleQuote,
     SingleDashArg,
     DoubleDashArg,
 }
@@ -36,8 +36,8 @@ impl Tokenizer {
         while let Some((i, ch)) = iter.next() {
             match self.mode {
                 ParseMode::None => match ch {
-                    '\'' => self.mode = ParseMode::StringSingle,
-                    '"' => self.mode = ParseMode::StringDouble,
+                    '\'' => self.mode = ParseMode::SingleQuote,
+                    '"' => self.mode = ParseMode::DoubleQuote,
                     '\\' => {
                         self.mode = ParseMode::Value;
                         let ch = iter.peek();
@@ -100,14 +100,14 @@ impl Tokenizer {
                         ))
                     }
                 },
-                ParseMode::StringSingle => match ch {
+                ParseMode::SingleQuote => match ch {
                     '\'' => self.push_input(),
                     _ => self.temp.push(ch),
                 },
-                ParseMode::StringDouble => match ch {
+                ParseMode::DoubleQuote => match ch {
                     '"' => self.push_input(),
                     '\\' => {
-                        if self.sub_mode == ParseMode::StringSingle {
+                        if self.sub_mode == ParseMode::SingleQuote {
                             self.temp.push(ch);
                             continue;
                         }
@@ -127,9 +127,9 @@ impl Tokenizer {
                     '\'' => match self.sub_mode {
                         ParseMode::None => {
                             self.temp.push(ch);
-                            self.sub_mode = ParseMode::StringSingle;
+                            self.sub_mode = ParseMode::SingleQuote;
                         }
-                        ParseMode::StringSingle => {
+                        ParseMode::SingleQuote => {
                             self.temp.push(ch);
                             self.sub_mode = ParseMode::None;
                         }
@@ -167,13 +167,13 @@ impl Tokenizer {
         }
 
         match self.mode {
-            ParseMode::StringSingle => {
+            ParseMode::SingleQuote => {
                 return Err(Error::new(
                     ErrorKind::InvalidInput,
                     "Single quote didn't end.",
                 ))
             }
-            ParseMode::StringDouble => {
+            ParseMode::DoubleQuote => {
                 return Err(Error::new(
                     ErrorKind::InvalidInput,
                     "Double quote didn't end.",
@@ -192,11 +192,11 @@ impl Tokenizer {
     fn push_input(&mut self) {
         match self.mode {
             ParseMode::None => panic!("This shouldn't have happened!"),
-            ParseMode::Value => self.tokens.push(Token::Command(self.temp.to_string())),
-            ParseMode::StringSingle => self
+            ParseMode::Value => self.tokens.push(Token::Value(self.temp.to_string())),
+            ParseMode::SingleQuote => self
                 .tokens
                 .push(Token::String(self.temp.to_string(), false)),
-            ParseMode::StringDouble => self.tokens.push(Token::String(self.temp.to_string(), true)),
+            ParseMode::DoubleQuote => self.tokens.push(Token::String(self.temp.to_string(), true)),
             ParseMode::SingleDashArg => self
                 .tokens
                 .push(Token::Argument(self.temp.to_string(), false)),

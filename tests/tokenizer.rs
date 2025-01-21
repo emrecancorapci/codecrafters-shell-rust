@@ -4,16 +4,16 @@ use shell_starter_rust::shell::{Token, Tokenizer};
 fn hello_world() {
     let test_string = "hello world".to_string();
     let expected_result = vec![
-        Token::Command("hello".to_string()),
+        Token::Value("hello".to_string()),
         Token::Space,
-        Token::Command("world".to_string()),
+        Token::Value("world".to_string()),
     ];
 
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -26,16 +26,16 @@ fn hello_world() {
 fn spacey_hello_world() {
     let test_string = "hello                 world".to_string();
     let expected_result = vec![
-        Token::Command("hello".to_string()),
+        Token::Value("hello".to_string()),
         Token::Space,
-        Token::Command("world".to_string()),
+        Token::Value("world".to_string()),
     ];
 
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -48,7 +48,7 @@ fn spacey_hello_world() {
 fn echo_hello_world_single_quote() {
     let test_string = "echo 'example test'".to_string();
     let expected_result = vec![
-        Token::Command("echo".to_string()),
+        Token::Value("echo".to_string()),
         Token::Space,
         Token::String("example test".to_string(), false),
     ];
@@ -57,7 +57,7 @@ fn echo_hello_world_single_quote() {
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -70,7 +70,7 @@ fn echo_hello_world_single_quote() {
 fn echo_hello_world_double_quote() {
     let test_string = "echo \"hello world\"".to_string();
     let expected_result = vec![
-        Token::Command("echo".to_string()),
+        Token::Value("echo".to_string()),
         Token::Space,
         Token::String("hello world".to_string(), true),
     ];
@@ -79,7 +79,7 @@ fn echo_hello_world_double_quote() {
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -92,7 +92,7 @@ fn echo_hello_world_double_quote() {
 fn spacey_echo_hello_world() {
     let test_string = "echo \"hello                   world\"".to_string();
     let expected_result = vec![
-        Token::Command("echo".to_string()),
+        Token::Value("echo".to_string()),
         Token::Space,
         Token::String("hello                   world".to_string(), true),
     ];
@@ -101,7 +101,7 @@ fn spacey_echo_hello_world() {
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -114,7 +114,7 @@ fn spacey_echo_hello_world() {
 fn double_inside_single_quote() {
     let test_string = "echo '\"hello world\"'".to_string();
     let expected_result = vec![
-        Token::Command("echo".to_string()),
+        Token::Value("echo".to_string()),
         Token::Space,
         Token::String("\"hello world\"".to_string(), false),
     ];
@@ -123,7 +123,7 @@ fn double_inside_single_quote() {
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -136,7 +136,7 @@ fn double_inside_single_quote() {
 fn single_inside_double_quote() {
     let test_string = "echo \"'hello world'\"".to_string();
     let expected_result = vec![
-        Token::Command("echo".to_string()),
+        Token::Value("echo".to_string()),
         Token::Space,
         Token::String("'hello world'".to_string(), true),
     ];
@@ -145,7 +145,7 @@ fn single_inside_double_quote() {
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -158,7 +158,7 @@ fn single_inside_double_quote() {
 fn single_dash_argument() {
     let test_string = "echo -s 'hello world'".to_string();
     let expected_result = vec![
-        Token::Command("echo".to_string()),
+        Token::Value("echo".to_string()),
         Token::Space,
         Token::Argument("s".to_string(), false),
         Token::Space,
@@ -169,7 +169,7 @@ fn single_dash_argument() {
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -182,7 +182,7 @@ fn single_dash_argument() {
 fn double_dash_argument() {
     let test_string = "echo --silent 'hello world'".to_string();
     let expected_result = vec![
-        Token::Command("echo".to_string()),
+        Token::Value("echo".to_string()),
         Token::Space,
         Token::Argument("silent".to_string(), true),
         Token::Space,
@@ -193,7 +193,7 @@ fn double_dash_argument() {
 
     match tokenizer.parse(test_string) {
         Ok(parsed_vector) => {
-            assert_vec_eq(parsed_vector, &expected_result);
+            assert_vec_eq(&parsed_vector, &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);

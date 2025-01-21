@@ -13,27 +13,23 @@ impl Command for Echo {
             ));
         }
 
-        if tokens.len() == 3 {
-            let string = tokens.get(2).unwrap().get_value();
-            return Ok(string);
-        }
-
         let mut string = String::new();
+        let mut iter = tokens.iter().skip(2).enumerate();
 
-        tokens
-            .iter()
-            .skip(2)
-            .enumerate()
-            .for_each(|(i, t)| match t {
+        while let Some((i, token)) = iter.next() {
+            match token {
                 Token::Space => {
                     if i > 0 {
                         string.push(' ');
                     }
                 }
-                Token::Command(cmd) => string.push_str(cmd.as_str()),
-                Token::Argument(_, _) => {}
+                Token::Value(cmd) => string.push_str(cmd.as_str()),
                 Token::String(str, _) => string.push_str(str.as_str()),
-            });
+                Token::Appender(_) => return Ok(string),
+                Token::Redirector(_) => return Ok(string),
+                _ => {}
+            }
+        }
 
         return Ok(string);
     }
