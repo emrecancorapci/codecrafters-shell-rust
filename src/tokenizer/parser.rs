@@ -20,7 +20,7 @@ impl Tokenizer {
     pub fn parse_tokens(
         &mut self,
         iter: &mut Peekable<Enumerate<Chars<'_>>>,
-    ) -> Result<Vec<Token>, Error> {
+    ) -> Result<(), Error> {
         while let Some((i, ch)) = iter.next() {
             match self.mode {
                 ParseMode::None => match ch {
@@ -182,11 +182,11 @@ impl Tokenizer {
                 ))
             }
             ParseMode::None => {
-                return Ok(self.tokens.to_vec());
+                return Ok(());
             }
             _ => {
                 self.push_input();
-                return Ok(self.tokens.to_vec());
+                return Ok(());
             }
         }
     }
@@ -199,8 +199,8 @@ impl Tokenizer {
                 let mut tokenizer: Tokenizer = Tokenizer::new();
 
                 match tokenizer.parse_tokens(iter) {
-                    Ok(tokens) => {
-                        self.redirection_token = Some((Token::Appender(num), tokens.to_vec()))
+                    Ok(_) => {
+                        self.redirection_token = Some((Token::Appender(num), tokenizer.get_tokens().to_vec()))
                     }
                     Err(_) => todo!(),
                 }
@@ -209,8 +209,8 @@ impl Tokenizer {
                 let mut tokenizer: Tokenizer = Tokenizer::new();
 
                 match tokenizer.parse_tokens(iter) {
-                    Ok(tokens) => {
-                        self.redirection_token = Some((Token::Redirector(num), tokens.to_vec()))
+                    Ok(_) => {
+                        self.redirection_token = Some((Token::Redirector(num), tokenizer.get_tokens().to_vec()))
                     }
                     Err(_) => todo!(),
                 }

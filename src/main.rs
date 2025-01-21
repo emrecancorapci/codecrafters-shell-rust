@@ -9,7 +9,7 @@ use shell_starter_rust::{
 };
 
 fn main() {
-    let commands = commands::get_commands();
+    let mut input_handler = InputHandler::new();
 
     let stdin = io::stdin();
     let mut input = String::new();
@@ -23,7 +23,7 @@ fn main() {
         } else if input.is_empty() {
             print!("\n$ ");
         } else {
-            match handle_input(&input, &commands) {
+            match input_handler.handle_input(&input) {
                 Ok(output) if output.is_empty() => print!("$ "),
                 Ok(output) => print!("{}\n$ ", output),
                 Err(err) => eprint!("{}\n$ ", err),
@@ -34,15 +34,29 @@ fn main() {
     }
 }
 
-fn handle_input(input: &String, commands: &CommandMap) -> Result<String, Error> {
-    let mut tokenizer = Tokenizer::new();
+struct InputHandler {
+    tokenizer: Tokenizer,
+    commands: CommandMap,
+}
+
+impl InputHandler {
+    pub fn new() -> InputHandler {
+        InputHandler {
+            tokenizer: Tokenizer::new(),
+            commands: commands::get_commands(),
+        }
+    }
+
+    fn handle_input(&mut self, input: &String) -> Result<String, Error> {
     let input = input.trim().to_string();
 
-    let tokens = tokenizer.parse(input)?;
+        self.tokenizer.parse(input)?;
+
+        let tokens = self.tokenizer.get_tokens_ref();
 
     match tokens.first() {
         Some(Token::Value(input_cmd) | Token::String(input_cmd, _)) => {
-            let cmd = commands.get(input_cmd);
+                let cmd = self.commands.get(input_cmd);
 
             if cmd.is_none() {
                 get_exec_path(input_cmd.as_str())?;
@@ -62,5 +76,6 @@ fn handle_input(input: &String, commands: &CommandMap) -> Result<String, Error> 
         }
         Some(_) => return Err(Error::new(ErrorKind::InvalidInput, "error: invalid input")),
         None => return Ok(String::new()),
+        }
     }
 }

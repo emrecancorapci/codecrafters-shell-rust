@@ -12,8 +12,8 @@ fn hello_world() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -34,8 +34,8 @@ fn spacey_hello_world() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -56,8 +56,8 @@ fn echo_hello_world_single_quote() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -78,8 +78,8 @@ fn echo_hello_world_double_quote() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -100,8 +100,8 @@ fn spacey_echo_hello_world() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -122,8 +122,8 @@ fn double_inside_single_quote() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -144,8 +144,8 @@ fn single_inside_double_quote() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -168,8 +168,8 @@ fn single_dash_argument() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -192,8 +192,8 @@ fn double_dash_argument() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -215,8 +215,8 @@ fn redirector() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -226,15 +226,18 @@ fn redirector() {
 
     assert!(tokenizer.is_redirected());
 
-    assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Redirector(1)));
+    assert_eq!(
+        tokenizer.get_redirection_type(),
+        Some(&Token::Redirector(1))
+    );
 
-    let expected_redirection = vec![
-        Token::Space,
-        Token::String("./hello.md".to_string(), true),
-    ];
+    let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
     match tokenizer.get_redirection_tokens() {
-        Some(parsed_vector) => assert_vec_eq(&parsed_vector, &expected_redirection),
+        Some(_) => assert_vec_eq(
+            tokenizer.get_redirection_tokens_ref().unwrap(),
+            &expected_redirection,
+        ),
         None => {
             eprintln!("Redirection not found!");
             assert!(false);
@@ -255,8 +258,8 @@ fn redirector_with_number() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -266,22 +269,24 @@ fn redirector_with_number() {
 
     assert!(tokenizer.is_redirected());
 
-    assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Redirector(2)));
+    assert_eq!(
+        tokenizer.get_redirection_type(),
+        Some(&Token::Redirector(2))
+    );
 
-    let expected_redirection = vec![
-        Token::Space,
-        Token::String("./hello.md".to_string(), true),
-    ];
+    let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
     match tokenizer.get_redirection_tokens() {
-        Some(parsed_vector) => assert_vec_eq(&parsed_vector, &expected_redirection),
+        Some(_) => assert_vec_eq(
+            tokenizer.get_redirection_tokens_ref().unwrap(),
+            &expected_redirection,
+        ),
         None => {
             eprintln!("Redirection not found!");
             assert!(false);
         }
     }
 }
-
 
 #[test]
 fn appender() {
@@ -296,8 +301,8 @@ fn appender() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -309,13 +314,13 @@ fn appender() {
 
     assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Appender(1)));
 
-    let expected_redirection = vec![
-        Token::Space,
-        Token::String("./hello.md".to_string(), true),
-    ];
+    let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
     match tokenizer.get_redirection_tokens() {
-        Some(parsed_vector) => assert_vec_eq(&parsed_vector, &expected_redirection),
+        Some(_) => assert_vec_eq(
+            tokenizer.get_redirection_tokens_ref().unwrap(),
+            &expected_redirection,
+        ),
         None => {
             eprintln!("Redirection not found!");
             assert!(false);
@@ -336,8 +341,8 @@ fn appender_with_number() {
     let mut tokenizer = Tokenizer::new();
 
     match tokenizer.parse(test_string) {
-        Ok(parsed_vector) => {
-            assert_vec_eq(&parsed_vector, &expected_result);
+        Ok(_) => {
+            assert_vec_eq(tokenizer.get_tokens_ref(), &expected_result);
         }
         Err(err) => {
             eprintln!("ERR: {}", err);
@@ -349,21 +354,19 @@ fn appender_with_number() {
 
     assert_eq!(tokenizer.get_redirection_type(), Some(&Token::Appender(2)));
 
-    let expected_redirection = vec![
-        Token::Space,
-        Token::String("./hello.md".to_string(), true),
-    ];
+    let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
     match tokenizer.get_redirection_tokens() {
-        Some(parsed_vector) => assert_vec_eq(&parsed_vector, &expected_redirection),
+        Some(_) => assert_vec_eq(
+            tokenizer.get_redirection_tokens_ref().unwrap(),
+            &expected_redirection,
+        ),
         None => {
             eprintln!("Redirection not found!");
             assert!(false);
         }
     }
 }
-
-
 
 fn assert_vec_eq<T: std::fmt::Debug + PartialEq>(vec1: &[T], vec2: &[T]) {
     if vec1 != vec2 {

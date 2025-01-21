@@ -29,10 +29,20 @@ impl Tokenizer {
         }
     }
 
-    pub fn parse(&mut self, input: String) -> Result<Vec<Token>, Error> {
+    pub fn parse(&mut self, input: String) -> Result<(), Error> {
         let mut iter = input.chars().into_iter().enumerate().peekable();
 
-        self.parse_tokens(&mut iter)
+        self.parse_tokens(&mut iter)?;
+
+        return Ok(());
+    }
+
+    pub fn get_tokens(&self) -> Vec<Token> {
+        self.tokens.to_vec()
+    }
+
+    pub fn get_tokens_ref(&self) -> &Vec<Token> {
+        &self.tokens
     }
 
     pub fn is_redirected(&self) -> bool {
@@ -49,6 +59,13 @@ impl Tokenizer {
     pub fn get_redirection_tokens(&self) -> Option<Vec<Token>> {
         match self.redirection_token {
             Some((_, ref tokens)) => Some(tokens.to_vec()),
+            None => None,
+        }
+    }
+
+    pub fn get_redirection_tokens_ref(&self) -> Option<&Vec<Token>> {
+        match self.redirection_token {
+            Some((_, ref tokens)) => Some(&tokens),
             None => None,
         }
     }
