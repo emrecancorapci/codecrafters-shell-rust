@@ -135,7 +135,9 @@ impl InputHandler {
             (false, true) if is_path_exist => {
                 let mut file_content = fs::read(&path)?;
 
-                file_content.extend_from_slice(&[10]);
+                if !file_content.is_empty() {
+                    file_content.extend_from_slice(&[10]);
+                }
                 file_content.extend_from_slice(&contents[..]);
 
                 fs::write(path, file_content)?;
