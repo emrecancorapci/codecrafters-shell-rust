@@ -54,6 +54,7 @@ impl InputHandler {
                 return Ok(vec![]);
             }
             Ok(response) if self.tokenizer.is_append_err() || self.tokenizer.is_redirect_err() => {
+                self.redirect(&[])?;
                 return Ok(response.as_bytes().to_vec());
             }
             Ok(response) => {
