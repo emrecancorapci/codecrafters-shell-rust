@@ -15,7 +15,10 @@ impl Token {
         match self {
             Token::Space => String::from(" "),
             Token::Value(val) => val.to_string(),
-            Token::Argument(val, _) => val.to_string(),
+            Token::Argument(val, is_double) => {
+                let dashes = if *is_double { "--" } else { "-" };
+                format!("{}{}", dashes, val.to_string())
+            }
             Token::String(val, _) => val.to_string(),
             Token::Redirector(num) => format!("{}>", num),
             Token::Appender(num) => format!("{}>>", num),

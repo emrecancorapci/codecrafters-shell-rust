@@ -35,6 +35,7 @@ fn main() {
             };
         }
 
+        input_handler.clear();
         input.clear();
     }
 }

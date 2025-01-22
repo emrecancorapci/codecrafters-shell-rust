@@ -37,6 +37,14 @@ impl Tokenizer {
         return Ok(());
     }
 
+    pub fn clear(&mut self) {
+        self.temp = String::new();
+        self.mode = ParseMode::None;
+        self.sub_mode = ParseMode::None;
+        self.tokens = Vec::new();
+        self.redirection_token = None;
+    }
+
     pub fn get_tokens(&self) -> Vec<Token> {
         self.tokens.to_vec()
     }

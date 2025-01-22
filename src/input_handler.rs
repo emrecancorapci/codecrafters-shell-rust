@@ -20,6 +20,10 @@ impl InputHandler {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.tokenizer.clear()
+    }
+
     pub fn handle_input(&mut self, input: &String) -> Result<Vec<u8>, Error> {
         let input = input.trim().to_string();
 

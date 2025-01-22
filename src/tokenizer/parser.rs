@@ -136,21 +136,8 @@ impl Tokenizer {
                     },
                     _ => self.temp.push(ch),
                 },
-                ParseMode::SingleDashArg => match ch {
-                    'a'..='z' | 'A'..='Z' | '_' | '-' => self.temp.push(ch),
-                    ' ' => {
-                        self.push_input();
-                        self.push_space();
-                    }
-                    _ => {
-                        return Err(Error::new(
-                            ErrorKind::InvalidInput,
-                            format!("Invalid character at {}", i),
-                        ))
-                    }
-                },
-                ParseMode::DoubleDashArg => match ch {
-                    'a'..='z' | 'A'..='Z' | '_' | '-' => self.temp.push(ch),
+                ParseMode::SingleDashArg | ParseMode::DoubleDashArg => match ch {
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => self.temp.push(ch),
                     ' ' => {
                         self.push_input();
                         self.push_space();
