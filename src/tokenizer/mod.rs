@@ -61,6 +61,14 @@ impl Tokenizer {
         matches!(self.redirection_token, Some((Token::Appender(_), _)))
     }
 
+    pub fn is_redirect_ok(&self) -> bool {
+        matches!(self.redirection_token, Some((Token::Redirector(1), _)))
+    }
+
+    pub fn is_append_ok(&self) -> bool {
+        matches!(self.redirection_token, Some((Token::Appender(1), _)))
+    }
+
     pub fn is_redirect_err(&self) -> bool {
         matches!(self.redirection_token, Some((Token::Redirector(2), _)))
     }
