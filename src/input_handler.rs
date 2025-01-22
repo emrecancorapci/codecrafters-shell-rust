@@ -105,7 +105,7 @@ impl InputHandler {
         if self.tokenizer.is_redirect() {
             fs::write(path, contents)?;
             return Ok(());
-        } else if self.tokenizer.is_redirect() {
+        } else if self.tokenizer.is_append() {
             if fs::exists(&path)? {
                 let mut content = fs::read(&path)?;
 
