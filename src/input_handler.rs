@@ -1,6 +1,7 @@
 use std::{
     fs,
     io::{Error, ErrorKind},
+    path::Path,
 };
 
 use shell_starter_rust::tokenizer::{path::get_exec_path, Command, Token, Tokenizer};
@@ -77,25 +78,41 @@ impl InputHandler {
 
         let output = std::process::Command::new(cmd).args(input_array).output()?;
 
-        if self.tokenizer.is_redirect() || self.tokenizer.is_append() {
-        } else {
-            if output.status.success() {
-                if self.tokenizer.is_redirect() || self.tokenizer.is_append() {
-                    self.redirect(&output.stdout)?;
+        if output.status.success() {
+            let mut output_array = output.stdout.to_vec();
 
-                    return Ok(vec![]);
-                }
-
-                return Ok(output.stdout);
-            } else {
-                return Err(Error::new(
-                    ErrorKind::InvalidInput,
-                    String::from_utf8(output.stderr).unwrap(),
-                ));
+            if output_array.last() == Some(&10) {
+                output_array.pop();
             }
-        }
 
-        return Ok(vec![]);
+            if self.tokenizer.is_redirect() || self.tokenizer.is_append() {
+                self.redirect(&output_array)?;
+
+                return Ok(vec![]);
+            }
+
+            return Ok(output_array);
+        } else {
+            let mut error_array = output.stderr.to_vec();
+            let mut output_array = output.stdout.to_vec();
+
+            if output_array.last() == Some(&10) {
+                output_array.pop();
+            }
+
+            if error_array.last() == Some(&10) {
+                error_array.pop();
+            }
+
+            if self.tokenizer.is_redirect() || self.tokenizer.is_append() {
+                self.redirect(&output_array)?;
+            }
+
+            return Err(Error::new(
+                ErrorKind::InvalidInput,
+                String::from_utf8(error_array).unwrap(),
+            ));
+        }
     }
 
     fn redirect(&self, contents: &[u8]) -> Result<(), Error> {
@@ -110,12 +127,12 @@ impl InputHandler {
             fs::write(path, contents)?;
             return Ok(());
         } else if self.tokenizer.is_append() {
-            if fs::exists(&path)? {
-                let mut content = fs::read(&path)?;
+            if Path::new(&path).exists() {
+                let mut file_content = fs::read(&path)?;
 
-                content.extend_from_slice(contents);
+                file_content.extend_from_slice(&contents[..]);
 
-                fs::write(path, content)?;
+                fs::write(path, file_content)?;
 
                 return Ok(());
             } else {
