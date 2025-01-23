@@ -2,12 +2,12 @@ use std::io::{Error, ErrorKind};
 
 use shell_starter_rust::tokenizer::{path, Command, Token};
 
-use super::SUPPORTED_COMMANDS;
+use crate::command_handler::SUPPORTED_COMMANDS;
 
 pub struct Type {}
 
 impl Command for Type {
-    fn cmd(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
+    fn run(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
         if tokens.len() < 3 {
             return Err(Error::new(
                 ErrorKind::InvalidInput,

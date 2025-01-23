@@ -2,16 +2,19 @@ use std::io::{self, Write};
 
 use input_handler::InputHandler;
 
+pub mod command_handler;
 pub mod commands;
 mod input_handler;
 
-fn main() {
-    let mut input_handler = InputHandler::new();
+async fn main() {
+    let command_handler = CommandHandler::new();
+    let mut input_handler: InputHandler = InputHandler::new(command_handler);
 
     let stdin = io::stdin();
     let mut stdout = io::stdout();
     let mut stderr = io::stderr();
     let mut input = String::new();
+
     print!("$ ");
 
     loop {

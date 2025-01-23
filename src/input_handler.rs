@@ -4,20 +4,23 @@ use std::{
     path::Path,
 };
 
-use shell_starter_rust::tokenizer::{path::get_exec_path, Command, Token, Tokenizer};
-
-use crate::commands::{self, CommandMap};
+use shell_starter_rust::tokenizer::{path::get_exec_path, Token, Tokenizer};
 
 pub struct InputHandler {
     tokenizer: Tokenizer,
-    commands: CommandMap,
+    command_handler: Box<dyn HandleCommand>,
+}
+
+pub trait HandleCommand {
+    fn run(&self, cmd: &str, tokens: &Vec<Token>) -> Result<String, Error>;
+    fn is_exist(&self, cmd: &str) -> bool;
 }
 
 impl InputHandler {
-    pub fn new() -> InputHandler {
+    pub fn new(command_handler: impl HandleCommand + 'static) -> InputHandler {
         InputHandler {
             tokenizer: Tokenizer::new(),
-            commands: commands::get_commands(),
+            command_handler: Box::new(command_handler),
         }
     }
 
@@ -30,25 +33,26 @@ impl InputHandler {
 
         self.tokenizer.parse(input)?;
 
-        match self.tokenizer.get_tokens_ref().first() {
-            Some(Token::Value(input_cmd) | Token::String(input_cmd, _)) => {
-                let cmd = self.commands.get(input_cmd);
+        let tokens =self.tokenizer.get_tokens_ref();
 
-                if cmd.is_some() {
-                    return self.handle_builtin_output(cmd.unwrap().as_ref());
-                } else {
-                    return self.handle_external_output(input_cmd);
-                }
+        match tokens.first() {
+            Some(Token::Value(cmd) | Token::String(cmd, _))
+                if self.command_handler.is_exist(cmd) =>
+            {
+                let result = self.command_handler.run(cmd, tokens);
+                return self.handle_builtin_output(result);
             }
+            Some(Token::Value(cmd) | Token::String(cmd, _)) => {
+                return self.handle_external_output(cmd);
+            }
+
             Some(_) => return Err(Error::new(ErrorKind::InvalidInput, "error: invalid input")),
             None => return Ok(vec![]),
         }
     }
 
-    fn handle_builtin_output(&self, cmd: &dyn Command) -> Result<Vec<u8>, Error> {
-        let tokens = self.tokenizer.get_tokens_ref();
-
-        match cmd.cmd(tokens) {
+    fn handle_builtin_output(&self, result: Result<String, Error>) -> Result<Vec<u8>, Error> {
+        match result {
             Ok(response) if self.tokenizer.is_append_ok() || self.tokenizer.is_redirect_ok() => {
                 self.redirect(response.as_bytes())?;
                 return Ok(vec![]);

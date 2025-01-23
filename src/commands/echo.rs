@@ -5,7 +5,7 @@ use shell_starter_rust::tokenizer::{Command, Token};
 pub struct Echo {}
 
 impl Command for Echo {
-    fn cmd(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
+    fn run(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
         if tokens.len() < 3 {
             return Err(Error::new(
                 ErrorKind::InvalidInput,

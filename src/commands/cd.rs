@@ -8,7 +8,7 @@ use shell_starter_rust::tokenizer::{Command, Token};
 pub struct Cd {}
 
 impl Command for Cd {
-    fn cmd(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
+    fn run(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
         if tokens.len() < 3 {
             return Err(Error::new(ErrorKind::InvalidInput, "cd: missing argument"));
         }
