@@ -11,7 +11,7 @@ pub enum Token {
 }
 
 impl Token {
-    pub fn get_value(&self) -> String {
+    pub fn serialize(&self) -> String {
         match self {
             Token::Space => String::from(" "),
             Token::Value(val) => val.to_string(),

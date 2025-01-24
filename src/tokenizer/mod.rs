@@ -2,11 +2,9 @@ use std::io::Error;
 
 pub mod path;
 
-mod command;
 mod parser;
 mod token;
 
-pub use command::Command;
 use parser::ParseMode;
 pub use token::Token;
 

@@ -4,6 +4,7 @@ use command_handler::CommandHandler;
 use event_handler::EventHandler;
 use input_handler::InputHandler;
 
+pub mod command;
 pub mod command_handler;
 pub mod commands;
 mod event_handler;

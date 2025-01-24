@@ -3,8 +3,9 @@ use std::{
     io::{Error, ErrorKind},
 };
 
-use shell_starter_rust::tokenizer::{Command, Token};
+use shell_starter_rust::tokenizer::Token;
 
+use crate::command::Command;
 pub struct Cd {}
 
 impl Command for Cd {

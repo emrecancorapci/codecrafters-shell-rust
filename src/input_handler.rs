@@ -83,7 +83,7 @@ impl InputHandler {
             .iter()
             .skip(2)
             .filter(|i| !matches!(i, Token::Space))
-            .map(|i| i.get_value());
+            .map(|i| i.serialize());
 
         let output = std::process::Command::new(cmd).args(input_array).output()?;
 
@@ -128,7 +128,7 @@ impl InputHandler {
             .get_redirection_tokens()
             .get(1)
             .unwrap()
-            .get_value();
+            .serialize();
 
         let is_path_exist = Path::new(&path).exists();
 

@@ -1,8 +1,9 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io::Error};
 
-use shell_starter_rust::tokenizer::{Command, Token};
+use shell_starter_rust::tokenizer::Token;
 
 use crate::{
+    command::Command,
     commands::{cd::Cd, echo::Echo, exit::Exit, pwd::Pwd, type_::Type},
     input_handler::HandleCommand,
 };
@@ -16,6 +17,7 @@ pub struct CommandHandler {
 impl CommandHandler {
     pub fn new() -> CommandHandler {
         let mut commands: HashMap<String, Box<dyn Command>> = HashMap::new();
+
         commands.insert("echo".to_string(), Box::new(Echo {}));
         commands.insert("type".to_string(), Box::new(Type {}));
         commands.insert("exit".to_string(), Box::new(Exit {}));
@@ -27,7 +29,7 @@ impl CommandHandler {
 }
 
 impl HandleCommand for CommandHandler {
-    fn run(&self, cmd: &str, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
+    fn run(&self, cmd: &str, tokens: &Vec<Token>) -> Result<String, Error> {
         match self.commands.get(cmd) {
             Some(cmd) => cmd.run(tokens),
             None => todo!(),
