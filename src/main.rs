@@ -1,44 +1,25 @@
-use std::io::{self, Write};
+use crossterm::execute;
 
+use command_handler::CommandHandler;
+use event_handler::EventHandler;
 use input_handler::InputHandler;
 
 pub mod command_handler;
 pub mod commands;
+mod event_handler;
 mod input_handler;
 
-async fn main() {
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
     let command_handler = CommandHandler::new();
-    let mut input_handler: InputHandler = InputHandler::new(command_handler);
+    let input_handler = InputHandler::new(command_handler);
+    let mut event_handler = EventHandler::new(input_handler);
 
-    let stdin = io::stdin();
-    let mut stdout = io::stdout();
-    let mut stderr = io::stderr();
-    let mut input = String::new();
+    execute!(event_handler.stdout_as_ref())?;
 
-    print!("$ ");
+    let _ = event_handler.run().await;
 
-    loop {
-        stdout.flush().unwrap();
+    execute!(event_handler.stdout_as_ref())?;
 
-        if let Err(err) = stdin.read_line(&mut input) {
-            eprint!("error: {}\n$ ", err);
-        } else if input.is_empty() {
-            print!("\n$ ");
-        } else {
-            let _ = match input_handler.handle_input(&input) {
-                Ok(output) if output.is_empty() => stdout.write_all(b"$ "),
-                Ok(output) => {
-                    let _ = stdout.write_all(&output[..]);
-                    stdout.write_all(b"\n$ ")
-                }
-                Err(err) => {
-                    let _ = stderr.write_all(err.to_string().as_bytes());
-                    stdout.write_all(b"\n$ ")
-                }
-            };
-        }
-
-        input_handler.clear();
-        input.clear();
-    }
+    return Ok(());
 }

@@ -33,7 +33,7 @@ impl InputHandler {
 
         self.tokenizer.parse(input)?;
 
-        let tokens =self.tokenizer.get_tokens_ref();
+        let tokens = self.tokenizer.get_tokens_ref();
 
         match tokens.first() {
             Some(Token::Value(cmd) | Token::String(cmd, _))
