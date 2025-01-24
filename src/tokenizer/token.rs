@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, io::{Error, ErrorKind}};
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Token {
@@ -6,8 +6,8 @@ pub enum Token {
     Value(String),
     Argument(String, bool),
     String(String, bool),
-    Redirector(u8),
-    Appender(u8),
+    Redirector(char),
+    Appender(char),
 }
 
 impl Token {
@@ -22,6 +22,39 @@ impl Token {
             Token::String(val, _) => val.to_string(),
             Token::Redirector(num) => format!("{}>", num),
             Token::Appender(num) => format!("{}>>", num),
+        }
+    }
+
+    pub fn is_redirection_token(&self) -> bool {
+        match self {
+            Token::Space => false,
+            Token::Value(_) => false,
+            Token::Argument(_, _) => false,
+            Token::String(_, _) => false,
+            Token::Redirector(_) => true,
+            Token::Appender(_) => true,
+        }
+    }
+
+    pub fn is_redirection_ok(&self) -> Result<bool, Error> {
+        match self {
+            Token::Space => Err(Error::new(ErrorKind::BrokenPipe, "Checked token is not a redirection token")),
+            Token::Value(_) => Err(Error::new(ErrorKind::BrokenPipe, "Checked token is not a redirection token")),
+            Token::Argument(_, _) => Err(Error::new(ErrorKind::BrokenPipe, "Checked token is not a redirection token")),
+            Token::String(_, _) => Err(Error::new(ErrorKind::BrokenPipe, "Checked token is not a redirection token")),
+            Token::Redirector(prefix) => Ok(prefix == &'1'),
+            Token::Appender(prefix) => Ok(prefix == &'1'),
+        }
+    }
+
+    pub fn is_redirection_err(&self) -> Result<bool, Error> {
+        match self {
+            Token::Space => Err(Error::new(ErrorKind::BrokenPipe, "Checked token is not a redirection token")),
+            Token::Value(_) => Err(Error::new(ErrorKind::BrokenPipe, "Checked token is not a redirection token")),
+            Token::Argument(_, _) => Err(Error::new(ErrorKind::BrokenPipe, "Checked token is not a redirection token")),
+            Token::String(_, _) => Err(Error::new(ErrorKind::BrokenPipe, "Checked token is not a redirection token")),
+            Token::Redirector(prefix) => Ok(prefix == &'2'),
+            Token::Appender(prefix) => Ok(prefix == &'2'),
         }
     }
 }

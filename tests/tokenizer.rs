@@ -52,9 +52,7 @@ fn single_quote() {
 
 #[test]
 fn unclosed_single_quote() {
-    let input = "echo 'unclosed single quote".to_string();
-
-    assert_parsing_err(input);
+    assert_parsing_err(String::from("echo 'unclosed single quote"));
 }
 
 #[test]
@@ -192,10 +190,12 @@ fn redirection_operator() {
         Token::Space,
         Token::String("hello world".to_string(), true),
         Token::Space,
+        Token::Redirector('1'),
+        Token::Space,
+        Token::String("./hello.md".to_string(), true),
     ];
-    let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
-    assert_redirection_parsing(input, expected, expected_redirection, Token::Redirector(1));
+    assert_parsing(input, expected);
 }
 
 #[test]
@@ -206,17 +206,17 @@ fn error_redirection_operator() {
         Token::Space,
         Token::String("hello world".to_string(), true),
         Token::Space,
+        Token::Redirector('2'),
+        Token::Space,
+        Token::String("./hello.md".to_string(), true),
     ];
-    let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
-    assert_redirection_parsing(input, expected, expected_redirection, Token::Redirector(2));
+    assert_parsing(input, expected);
 }
 
 #[test]
 fn redirection_without_target() {
-    let input = "echo >".to_string();
-
-    assert_parsing_err(input);
+    assert_parsing_err(String::from("echo >"));
 }
 
 #[test]
@@ -227,10 +227,12 @@ fn appender() {
         Token::Space,
         Token::String("hello world".to_string(), true),
         Token::Space,
+        Token::Appender('1'),
+        Token::Space,
+        Token::String("./hello.md".to_string(), true),
     ];
-    let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
-    assert_redirection_parsing(input, expected, expected_redirection, Token::Appender(1));
+    assert_parsing(input, expected);
 }
 
 #[test]
@@ -241,10 +243,12 @@ fn appender_with_number() {
         Token::Space,
         Token::String("hello world".to_string(), true),
         Token::Space,
+        Token::Appender('2'),
+        Token::Space,
+        Token::String("./hello.md".to_string(), true),
     ];
-    let expected_redirection = vec![Token::Space, Token::String("./hello.md".to_string(), true)];
 
-    assert_redirection_parsing(input, expected, expected_redirection, Token::Appender(2));
+    assert_parsing(input, expected);
 }
 
 #[test]
@@ -277,41 +281,16 @@ fn assert_vec_eq<T: std::fmt::Debug + PartialEq>(vec1: &[T], vec2: &[T]) {
     }
 }
 
-fn assert_parsing(input: String, expected: Vec<Token>) -> Tokenizer {
-    let mut tokenizer = Tokenizer::new();
-    match tokenizer.parse(input) {
-        Ok(_) => assert_vec_eq(tokenizer.get_tokens_ref(), &expected),
+fn assert_parsing(input: String, expected: Vec<Token>) {
+    match Tokenizer::tokenize(input) {
+        Ok(tokens) => assert_vec_eq(&tokens, &expected),
         Err(err) => panic!("Unexpected error: {}", err),
     }
-
-    tokenizer
 }
 
 fn assert_parsing_err(input: String) {
-    let mut tokenizer = Tokenizer::new();
-    let result = tokenizer.parse(input);
+    let result = Tokenizer::tokenize(input);
 
     assert!(result.is_err());
     assert_eq!(result.err().unwrap().kind(), ErrorKind::InvalidInput);
-}
-
-fn assert_redirection_parsing(
-    input: String,
-    expected: Vec<Token>,
-    expected_redirection: Vec<Token>,
-    expected_type: Token,
-) {
-    let mut tokenizer = Tokenizer::new();
-    match tokenizer.parse(input) {
-        Ok(_) => assert_vec_eq(tokenizer.get_tokens_ref(), &expected),
-        Err(err) => panic!("Unexpected error: {}", err),
-    }
-
-    assert!(tokenizer.is_redirect() || tokenizer.is_append());
-    assert_eq!(tokenizer.get_redirection_type(), Some(&expected_type));
-
-    assert_vec_eq(
-        tokenizer.get_redirection_tokens().as_ref(),
-        &expected_redirection,
-    )
 }

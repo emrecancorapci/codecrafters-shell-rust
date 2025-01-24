@@ -1,91 +1,241 @@
-use std::io::Error;
+use std::{
+    io::{Error, ErrorKind},
+    iter::{Enumerate, Peekable},
+    str::Chars,
+};
 
-pub mod path;
-
-mod parser;
-mod token;
-
-use parser::ParseMode;
 pub use token::Token;
+
+mod token;
 
 pub struct Tokenizer {
     temp: String,
     mode: ParseMode,
     sub_mode: ParseMode,
     tokens: Vec<Token>,
-    redirection_token: Option<(Token, Vec<Token>)>,
+}
+
+#[derive(PartialEq, Eq)]
+pub(super) enum ParseMode {
+    None,
+    Value,
+    SingleQuote,
+    DoubleQuote,
+    SingleDashArg,
+    DoubleDashArg,
 }
 
 impl Tokenizer {
-    pub fn new() -> Tokenizer {
-        Tokenizer {
+    pub fn tokenize(input: String) -> Result<Vec<Token>, Error> {
+        let mut iter = input.chars().into_iter().enumerate().peekable();
+        let mut tokenizer = Tokenizer {
             temp: String::new(),
             mode: ParseMode::None,
             sub_mode: ParseMode::None,
             tokens: Vec::new(),
-            redirection_token: None,
+        };
+
+        while let Some((i, ch)) = iter.next() {
+            match tokenizer.mode {
+                ParseMode::None => match ch {
+                    '\'' => tokenizer.mode = ParseMode::SingleQuote,
+                    '"' => tokenizer.mode = ParseMode::DoubleQuote,
+                    '\\' => {
+                        tokenizer.mode = ParseMode::Value;
+                        let ch = iter.peek();
+
+                        match ch {
+                            Some(_) => {
+                                let (_index, ch) = iter.next().unwrap();
+
+                                tokenizer.temp.push(ch)
+                            }
+                            None => todo!(),
+                        }
+                    }
+                    '-' => {
+                        if iter.peek() == Some(&(i + 1, '-')) {
+                            iter.next();
+                            tokenizer.mode = ParseMode::DoubleDashArg
+                        } else {
+                            tokenizer.mode = ParseMode::SingleDashArg
+                        }
+                    }
+                    'a'..='z' | 'A'..='Z' | '_' | '.' | '/' | '~' if tokenizer.temp.is_empty() => {
+                        tokenizer.mode = ParseMode::Value;
+                        tokenizer.temp.push(ch);
+                    }
+                    '0'..='9' if tokenizer.temp.is_empty() => {
+                        if let Some((_, '>')) = iter.peek() {
+                            iter.next();
+                            tokenizer.parse_redirector(&mut iter, ch)?;
+                            break;
+                        } else {
+                            tokenizer.temp.push(ch);
+                            tokenizer.mode = ParseMode::Value;
+                        }
+                    }
+                    '>' => {
+                        tokenizer.parse_redirector(&mut iter, '1')?;
+                        break;
+                    }
+                    ' ' => {
+                        tokenizer.push_space();
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::InvalidInput,
+                            format!("Invalid character at {}", i),
+                        ))
+                    }
+                },
+                ParseMode::Value => match ch {
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' | '.' | '/' => {
+                        tokenizer.temp.push(ch)
+                    }
+                    '\\' => {
+                        let ch = iter.peek();
+
+                        match ch {
+                            Some(_) => {
+                                let (_index, ch) = iter.next().unwrap();
+
+                                tokenizer.temp.push(ch)
+                            }
+                            None => todo!(),
+                        }
+                    }
+                    ' ' => {
+                        tokenizer.push_input();
+                        tokenizer.push_space();
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::InvalidInput,
+                            format!("Invalid character at {}", i),
+                        ))
+                    }
+                },
+                ParseMode::SingleQuote => match ch {
+                    '\'' => tokenizer.push_input(),
+                    _ => tokenizer.temp.push(ch),
+                },
+                ParseMode::DoubleQuote => match ch {
+                    '"' => tokenizer.push_input(),
+                    '\\' => {
+                        if tokenizer.sub_mode == ParseMode::SingleQuote {
+                            tokenizer.temp.push(ch);
+                            continue;
+                        }
+
+                        match iter.peek() {
+                            Some((_, '\\' | '$' | '"')) => {
+                                let (_index, ch) = iter.next().unwrap();
+
+                                tokenizer.temp.push(ch)
+                            }
+                            Some(_) => {
+                                tokenizer.temp.push(ch);
+                            }
+                            None => todo!(),
+                        }
+                    }
+                    '\'' => match tokenizer.sub_mode {
+                        ParseMode::None => {
+                            tokenizer.temp.push(ch);
+                            tokenizer.sub_mode = ParseMode::SingleQuote;
+                        }
+                        ParseMode::SingleQuote => {
+                            tokenizer.temp.push(ch);
+                            tokenizer.sub_mode = ParseMode::None;
+                        }
+                        _ => todo!(),
+                    },
+                    _ => tokenizer.temp.push(ch),
+                },
+                ParseMode::SingleDashArg | ParseMode::DoubleDashArg => match ch {
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => tokenizer.temp.push(ch),
+                    ' ' => {
+                        tokenizer.push_input();
+                        tokenizer.push_space();
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::InvalidInput,
+                            format!("Invalid character at {}", i),
+                        ))
+                    }
+                },
+            }
+        }
+
+        match tokenizer.mode {
+            ParseMode::SingleQuote => {
+                return Err(Error::new(
+                    ErrorKind::InvalidInput,
+                    "Single quote didn't end.",
+                ))
+            }
+            ParseMode::DoubleQuote => {
+                return Err(Error::new(
+                    ErrorKind::InvalidInput,
+                    "Double quote didn't end.",
+                ))
+            }
+            ParseMode::None => {
+                return Ok(tokenizer.tokens.to_vec());
+            }
+            _ => {
+                tokenizer.push_input();
+                return Ok(tokenizer.tokens.to_vec());
+            }
         }
     }
 
-    pub fn parse(&mut self, input: String) -> Result<(), Error> {
-        let mut iter = input.chars().into_iter().enumerate().peekable();
+    fn parse_redirector(
+        &mut self,
+        iter: &mut Peekable<Enumerate<Chars<'_>>>,
+        prefix: char,
+    ) -> Result<(), Error> {
+        match iter.peek() {
+            Some((_, '>')) => {
+                iter.next();
 
-        self.parse_tokens(&mut iter)?;
+                self.tokens.push(Token::Appender(prefix));
+                Ok(())
+            }
+            Some(_) => {
+                self.tokens.push(Token::Redirector(prefix));
+                Ok(())
+            }
 
-        return Ok(());
+            None => return Err(Error::new(ErrorKind::InvalidInput, "No redirection target")),
+        }
     }
 
-    pub fn clear(&mut self) {
+    fn push_input(&mut self) {
+        match self.mode {
+            ParseMode::None => panic!("This shouldn't have happened!"),
+            ParseMode::Value => self.tokens.push(Token::Value(self.temp.to_string())),
+            ParseMode::SingleQuote => self
+                .tokens
+                .push(Token::String(self.temp.to_string(), false)),
+            ParseMode::DoubleQuote => self.tokens.push(Token::String(self.temp.to_string(), true)),
+            ParseMode::SingleDashArg => self
+                .tokens
+                .push(Token::Argument(self.temp.to_string(), false)),
+            ParseMode::DoubleDashArg => self
+                .tokens
+                .push(Token::Argument(self.temp.to_string(), true)),
+        }
         self.temp = String::new();
         self.mode = ParseMode::None;
         self.sub_mode = ParseMode::None;
-        self.tokens = Vec::new();
-        self.redirection_token = None;
     }
 
-    pub fn get_tokens(&self) -> Vec<Token> {
-        self.tokens.to_vec()
-    }
-
-    pub fn get_tokens_ref(&self) -> &Vec<Token> {
-        &self.tokens
-    }
-
-    pub fn is_redirect(&self) -> bool {
-        matches!(self.redirection_token, Some((Token::Redirector(_), _)))
-    }
-
-    pub fn is_append(&self) -> bool {
-        matches!(self.redirection_token, Some((Token::Appender(_), _)))
-    }
-
-    pub fn is_redirect_ok(&self) -> bool {
-        matches!(self.redirection_token, Some((Token::Redirector(1), _)))
-    }
-
-    pub fn is_append_ok(&self) -> bool {
-        matches!(self.redirection_token, Some((Token::Appender(1), _)))
-    }
-
-    pub fn is_redirect_err(&self) -> bool {
-        matches!(self.redirection_token, Some((Token::Redirector(2), _)))
-    }
-
-    pub fn is_append_err(&self) -> bool {
-        matches!(self.redirection_token, Some((Token::Appender(2), _)))
-    }
-
-    pub fn get_redirection_type(&self) -> Option<&Token> {
-        match self.redirection_token {
-            Some((ref token, _)) => Some(token),
-            None => None,
-        }
-    }
-
-    pub fn get_redirection_tokens(&self) -> Vec<Token> {
-        match self.redirection_token {
-            Some((_, ref tokens)) => tokens.to_vec(),
-            None => vec![],
+    fn push_space(&mut self) {
+        if self.tokens.last() != Some(&Token::Space) {
+            self.tokens.push(Token::Space);
         }
     }
 }
