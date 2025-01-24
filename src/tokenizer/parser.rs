@@ -53,7 +53,7 @@ impl Tokenizer {
 
                         if let Some((_, '>')) = iter.peek() {
                             iter.next();
-                            self.parse_redirector(iter, number);
+                            self.parse_redirector(iter, number)?;
                             break;
                         } else {
                             self.temp.push(ch);
@@ -61,7 +61,7 @@ impl Tokenizer {
                         }
                     }
                     '>' => {
-                        self.parse_redirector(iter, 1);
+                        self.parse_redirector(iter, 1)?;
                         break;
                     }
                     ' ' => {
@@ -175,7 +175,11 @@ impl Tokenizer {
         }
     }
 
-    fn parse_redirector(&mut self, iter: &mut Peekable<Enumerate<Chars<'_>>>, num: u8) {
+    fn parse_redirector(
+        &mut self,
+        iter: &mut Peekable<Enumerate<Chars<'_>>>,
+        num: u8,
+    ) -> Result<(), Error> {
         match iter.peek() {
             Some((_, '>')) => {
                 iter.next();
@@ -185,7 +189,9 @@ impl Tokenizer {
                 match tokenizer.parse_tokens(iter) {
                     Ok(_) => {
                         self.redirection_token =
-                            Some((Token::Appender(num), tokenizer.get_tokens().to_vec()))
+                            Some((Token::Appender(num), tokenizer.get_tokens().to_vec()));
+
+                        Ok(())
                     }
                     Err(_) => todo!(),
                 }
@@ -196,12 +202,14 @@ impl Tokenizer {
                 match tokenizer.parse_tokens(iter) {
                     Ok(_) => {
                         self.redirection_token =
-                            Some((Token::Redirector(num), tokenizer.get_tokens().to_vec()))
+                            Some((Token::Redirector(num), tokenizer.get_tokens().to_vec()));
+
+                        Ok(())
                     }
                     Err(_) => todo!(),
                 }
             }
-            None => todo!(),
+            None => return Err(Error::new(ErrorKind::InvalidInput, "No redirection target")),
         }
     }
 
