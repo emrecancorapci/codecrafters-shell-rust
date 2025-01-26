@@ -1,10 +1,8 @@
 use std::io::{Error, ErrorKind};
 
-use shell_starter_rust::tokenizer::{path, Token};
+use shell_starter_rust::{env::path::ExecutionPath, tokenizer::Token};
 
-use crate::command::Command;
-
-use crate::command_handler::SUPPORTED_COMMANDS;
+use crate::command::{executor::SUPPORTED_COMMANDS, Command};
 
 pub struct Type {}
 
@@ -30,8 +28,8 @@ impl Command for Type {
                     "Third token shouldn't be a space. Fix this.",
                 ))
             }
-            Token::Value(input) => match path::get_exec_path_string(input.as_str()) {
-                Ok(path) => return Ok(format!("{} is {}", input, path)),
+            Token::Value(input) => match input.get_exec_path() {
+                Ok(path) => return Ok(format!("{} is {}", input, path.to_str().unwrap())),
                 Err(_) => {
                     return Err(Error::new(
                         ErrorKind::InvalidInput,
@@ -40,8 +38,8 @@ impl Command for Type {
                 }
             },
             Token::Argument(_, _) => todo!(),
-            Token::String(input, _) => match path::get_exec_path_string(input.as_str()) {
-                Ok(path) => return Ok(format!("{} is {}", input, path)),
+            Token::String(input, _) => match input.get_exec_path() {
+                Ok(path) => return Ok(format!("{} is {}", input, path.to_str().unwrap())),
                 Err(_) => {
                     return Err(Error::new(
                         ErrorKind::InvalidInput,

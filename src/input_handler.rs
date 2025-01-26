@@ -4,20 +4,16 @@ use std::{
     path::Path,
 };
 
+use run_command::RunCommand;
 use shell_starter_rust::tokenizer::{path::get_exec_path, Token, Tokenizer};
+pub mod run_command;
 
 pub struct InputHandler {
-    tokenizer: Tokenizer,
-    command_handler: Box<dyn HandleCommand>,
-}
-
-pub trait HandleCommand {
-    fn run(&self, cmd: &str, tokens: &Vec<Token>) -> Result<String, Error>;
-    fn is_exist(&self, cmd: &str) -> bool;
+    command_handler: Box<dyn RunCommand>,
 }
 
 impl InputHandler {
-    pub fn new(command_handler: impl HandleCommand + 'static) -> InputHandler {
+    pub fn new(command_handler: impl RunCommand + 'static) -> InputHandler {
         InputHandler {
             tokenizer: Tokenizer::new(),
             command_handler: Box::new(command_handler),

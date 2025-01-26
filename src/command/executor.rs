@@ -1,21 +1,21 @@
-use std::{collections::HashMap, io::Error};
+use std::{
+    collections::HashMap,
+    io::{Error, ErrorKind},
+};
 
 use shell_starter_rust::tokenizer::Token;
 
-use crate::{
-    command::Command,
-    commands::{cd::Cd, echo::Echo, exit::Exit, pwd::Pwd, type_::Type},
-    input_handler::HandleCommand,
-};
+use super::builtin::{cd::Cd, echo::Echo, exit::Exit, pwd::Pwd, type_::Type};
+use crate::{command::Command, input_handler::run_command::RunCommand};
 
 pub const SUPPORTED_COMMANDS: [&str; 5] = ["echo", "type", "exit", "pwd", "cd"];
 
-pub struct CommandHandler {
+pub struct Executor {
     commands: HashMap<String, Box<dyn Command>>,
 }
 
-impl CommandHandler {
-    pub fn new() -> CommandHandler {
+impl Executor {
+    pub fn new() -> Executor {
         let mut commands: HashMap<String, Box<dyn Command>> = HashMap::new();
 
         commands.insert("echo".to_string(), Box::new(Echo {}));
@@ -24,19 +24,15 @@ impl CommandHandler {
         commands.insert("pwd".to_string(), Box::new(Pwd {}));
         commands.insert("cd".to_string(), Box::new(Cd {}));
 
-        CommandHandler { commands }
+        Executor { commands }
     }
 }
 
-impl HandleCommand for CommandHandler {
+impl RunCommand for Executor {
     fn run(&self, cmd: &str, tokens: &Vec<Token>) -> Result<String, Error> {
         match self.commands.get(cmd) {
             Some(cmd) => cmd.run(tokens),
-            None => todo!(),
+            None => Err(Error::new(ErrorKind::NotFound, "Command not found")),
         }
-    }
-
-    fn is_exist(&self, cmd: &str) -> bool {
-        self.commands.contains_key(cmd)
     }
 }
