@@ -1,6 +1,6 @@
 use std::io::{Error, ErrorKind};
 
-use shell_starter_rust::{env::path::ExecutionPath, tokenizer::Token};
+use shell_starter_rust::{tokenizer::Token, util::path::ExecutionPath};
 
 use crate::command::{executor::SUPPORTED_COMMANDS, Command};
 
@@ -29,8 +29,8 @@ impl Command for Type {
                 ))
             }
             Token::Value(input) => match input.get_exec_path() {
-                Ok(path) => return Ok(format!("{} is {}", input, path.to_str().unwrap())),
-                Err(_) => {
+                Some(path) => return Ok(format!("{} is {}", input, path.to_str().unwrap())),
+                None => {
                     return Err(Error::new(
                         ErrorKind::InvalidInput,
                         format!("{} not found", input),
@@ -39,8 +39,8 @@ impl Command for Type {
             },
             Token::Argument(_, _) => todo!(),
             Token::String(input, _) => match input.get_exec_path() {
-                Ok(path) => return Ok(format!("{} is {}", input, path.to_str().unwrap())),
-                Err(_) => {
+                Some(path) => return Ok(format!("{} is {}", input, path.to_str().unwrap())),
+                None => {
                     return Err(Error::new(
                         ErrorKind::InvalidInput,
                         format!("{} not found", input),
