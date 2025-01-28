@@ -7,7 +7,7 @@ use crate::command::{executor::SUPPORTED_COMMANDS, Command};
 pub struct Type {}
 
 impl Command for Type {
-    fn run(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
+    fn run(&self, tokens: &[Token]) -> Result<String, std::io::Error> {
         if tokens.len() < 3 {
             return Err(Error::new(
                 ErrorKind::InvalidInput,

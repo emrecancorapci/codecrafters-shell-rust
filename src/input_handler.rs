@@ -4,10 +4,7 @@ use std::{
 };
 
 use run_command::RunCommand;
-use shell_starter_rust::{
-    tokenizer::{tokenize, Token},
-    util::path::ExecutionPath,
-};
+use shell_starter_rust::{tokenizer::Token, util::path::ExecutionPath};
 
 mod redirected;
 pub mod run_command;
@@ -23,22 +20,14 @@ impl InputHandler {
         }
     }
 
-    pub fn handle_input(&mut self, input: &String) -> Result<Vec<u8>, Error> {
-        let tokens = tokenize(input.trim())?;
-
-        if tokens.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let redirection_token = tokens.iter().any(|t| t.is_redirection_token());
-
-        match redirection_token {
-            true => self.handle_redirected_input(&tokens),
-            false => self.handle_direct_input(&tokens),
+    pub fn handle_tokens(&mut self, tokens: &[Token]) -> Result<Vec<u8>, Error> {
+        match tokens.iter().any(|t| t.is_redirection_token()) {
+            true => self.handle_redirected_input(tokens),
+            false => self.handle_direct_input(tokens),
         }
     }
 
-    fn handle_direct_input(&self, tokens: &Vec<Token>) -> Result<Vec<u8>, Error> {
+    fn handle_direct_input(&self, tokens: &[Token]) -> Result<Vec<u8>, Error> {
         match tokens.first().unwrap() {
             Token::Value(cmd) | Token::String(cmd, _) if cmd.get_exec_path().is_some() => {
                 let output = InputHandler::execute_external(tokens, cmd)?;
@@ -65,7 +54,7 @@ impl InputHandler {
                 ));
             }
             Token::Value(cmd) | Token::String(cmd, _) => {
-                match self.command_handler.run(cmd, &tokens) {
+                match self.command_handler.run(cmd, tokens) {
                     Ok(response) => return Ok(response.as_bytes().to_vec()),
                     Err(err) => return Err(err),
                 }

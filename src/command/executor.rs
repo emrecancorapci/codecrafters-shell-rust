@@ -29,7 +29,7 @@ impl Executor {
 }
 
 impl RunCommand for Executor {
-    fn run(&self, cmd: &str, tokens: &Vec<Token>) -> Result<String, Error> {
+    fn run(&self, cmd: &str, tokens: &[Token]) -> Result<String, Error> {
         match self.commands.get(cmd) {
             Some(cmd) => cmd.run(tokens),
             None => Err(Error::new(ErrorKind::NotFound, "Command not found")),

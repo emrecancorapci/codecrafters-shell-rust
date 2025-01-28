@@ -10,7 +10,7 @@ use shell_starter_rust::{
 
 use super::InputHandler;
 impl InputHandler {
-    pub(super) fn handle_redirected_input(&self, tokens: &Vec<Token>) -> Result<Vec<u8>, Error> {
+    pub(super) fn handle_redirected_input(&self, tokens: &[Token]) -> Result<Vec<u8>, Error> {
         let redirection = tokens
             .iter()
             .position(|t| t.is_redirection_token())

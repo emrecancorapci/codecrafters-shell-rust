@@ -11,7 +11,6 @@ pub mod builtin {
     pub mod type_;
 }
 
-
 pub trait Command {
-    fn run(&self, tokens: &Vec<Token>) -> Result<String, Error>;
+    fn run(&self, tokens: &[Token]) -> Result<String, Error>;
 }

@@ -1,6 +1,7 @@
 use std::io::{Error, ErrorKind, Write};
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
+use shell_starter_rust::tokenizer::tokenize;
 
 use super::EventHandler;
 
@@ -38,20 +39,24 @@ impl EventHandler {
             }
             KeyCode::Backspace => {}
             KeyCode::Enter => {
-                match self.input_handler.handle_input(&self.buffer) {
-                    Ok(ok) => {
-                        self.stdout.write(&ok)?;
+                match tokenize(self.buffer.trim())? {
+                    tokens if tokens.is_empty() => {
+                        self.stdout.write(b"")?;
                     }
-                    Err(err) => {
-                        if err.kind() == ErrorKind::Interrupted {
-                            return Err(err);
+                    tokens => match self.input_handler.handle_tokens(&tokens) {
+                        Ok(ok) => {
+                            self.stdout.write(&ok)?;
                         }
-                        self.stderr.write(&err.to_string().as_bytes())?;
-                    }
+                        Err(err) => {
+                            if err.kind() == ErrorKind::Interrupted {
+                                return Err(err);
+                            }
+                            self.stderr.write(&err.to_string().as_bytes())?;
+                        }
+                    },
                 }
 
                 self.stdout.write(b"\n$ ")?;
-
                 self.buffer.clear();
             }
             KeyCode::Left => {}

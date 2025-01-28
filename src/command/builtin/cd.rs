@@ -9,7 +9,7 @@ use crate::command::Command;
 pub struct Cd {}
 
 impl Command for Cd {
-    fn run(&self, tokens: &Vec<Token>) -> Result<String, std::io::Error> {
+    fn run(&self, tokens: &[Token]) -> Result<String, std::io::Error> {
         if tokens.len() < 3 {
             return Err(Error::new(ErrorKind::InvalidInput, "cd: missing argument"));
         }
