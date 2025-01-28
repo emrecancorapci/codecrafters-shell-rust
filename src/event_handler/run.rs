@@ -53,7 +53,6 @@ impl EventHandler {
                 self.stdout.write(b"\n$ ")?;
 
                 self.buffer.clear();
-                self.input_handler.clear();
             }
             KeyCode::Left => {}
             KeyCode::Right => {}
