@@ -1,12 +1,10 @@
 use std::io::{Error, ErrorKind};
 
-use shell_starter_rust::tokenizer::Token;
-
-use crate::command::Command;
+use crate::{shell::core::ShellCommand, tokenizer::Token};
 pub struct Echo {}
 
-impl Command for Echo {
-    fn run(&self, tokens: &[Token]) -> Result<String, std::io::Error> {
+impl ShellCommand<Token> for Echo {
+    fn run(tokens: &[Token]) -> Result<String, std::io::Error> {
         if tokens.len() < 3 {
             return Err(Error::new(
                 ErrorKind::InvalidInput,

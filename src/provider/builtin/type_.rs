@@ -1,13 +1,14 @@
 use std::io::{Error, ErrorKind};
 
-use shell_starter_rust::{tokenizer::Token, util::path::ExecutionPath};
-
-use crate::command::{executor::SUPPORTED_COMMANDS, Command};
+use crate::{
+    provider::SUPPORTED_COMMANDS, shell::core::ShellCommand, tokenizer::Token,
+    util::path::ExecutionPath,
+};
 
 pub struct Type {}
 
-impl Command for Type {
-    fn run(&self, tokens: &[Token]) -> Result<String, std::io::Error> {
+impl ShellCommand<Token> for Type {
+    fn run(tokens: &[Token]) -> Result<String, Error> {
         if tokens.len() < 3 {
             return Err(Error::new(
                 ErrorKind::InvalidInput,

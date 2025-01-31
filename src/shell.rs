@@ -1,12 +1,33 @@
-use std::io::{Error, ErrorKind, Write};
+use std::io::{self, Error, ErrorKind, Stderr, Stdout, Write};
 
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
-use shell_starter_rust::tokenizer::tokenize;
+use core::{ShellCommandProvider, ShellInterpreter, ShellTokenizer};
+use crossterm::{
+    event::{self, Event, KeyCode, KeyEvent},
+    execute,
+};
 
-use super::EventHandler;
+pub mod core;
 
-impl EventHandler {
-    pub async fn run(&mut self) -> Result<String, Error> {
+pub struct Shell {
+    buffer: String,
+    stdout: Stdout,
+    stderr: Stderr,
+}
+
+impl Shell {
+    pub fn new() -> Self {
+        Self {
+            buffer: String::new(),
+            stdout: io::stdout(),
+            stderr: io::stderr(),
+        }
+    }
+
+    pub async fn run<T, SI: ShellInterpreter<T>, ST: ShellTokenizer<T>, SCC: ShellCommandProvider<T>>(
+        &mut self,
+    ) -> Result<String, Error> {
+        self.init()?;
+
         print!("$ ");
 
         loop {
@@ -15,7 +36,7 @@ impl EventHandler {
             match match event::read()? {
                 Event::FocusGained => todo!(),
                 Event::FocusLost => todo!(),
-                Event::Key(key_event) => self.handle_keys(key_event),
+                Event::Key(key_event) => self.handle_keys::<T, SI, ST, SCC>(key_event),
                 Event::Mouse(_) => todo!(),
                 Event::Paste(_) => todo!(),
                 Event::Resize(_, _) => todo!(),
@@ -30,7 +51,15 @@ impl EventHandler {
         }
     }
 
-    fn handle_keys(&mut self, key_event: KeyEvent) -> Result<(), Error> {
+    fn init(&mut self) -> Result<(), Error> {
+        execute!(self.stdout)?;
+        Ok(())
+    }
+
+    fn handle_keys<T, SI: ShellInterpreter<T>, ST: ShellTokenizer<T>, SCC: ShellCommandProvider<T>>(
+        &mut self,
+        key_event: KeyEvent,
+    ) -> Result<(), Error> {
         let KeyEvent { code, .. } = key_event;
 
         match code {
@@ -39,11 +68,11 @@ impl EventHandler {
             }
             KeyCode::Backspace => {}
             KeyCode::Enter => {
-                match tokenize(self.buffer.trim())? {
+                match ST::tokenize(self.buffer.trim())? {
                     tokens if tokens.is_empty() => {
                         self.stdout.write(b"")?;
                     }
-                    tokens => match self.input_handler.handle_tokens(&tokens) {
+                    tokens => match SI::run::<SCC>(&tokens) {
                         Ok(ok) => {
                             self.stdout.write(&ok)?;
                         }

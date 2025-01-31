@@ -42,19 +42,19 @@ impl Token {
     pub fn is_redirection_ok(&self) -> Result<bool, Error> {
         match self {
             Token::Space => Err(Error::new(
-                ErrorKind::BrokenPipe,
+                ErrorKind::Other,
                 "Checked token is not a redirection token",
             )),
             Token::Value(_) => Err(Error::new(
-                ErrorKind::BrokenPipe,
+                ErrorKind::Other,
                 "Checked token is not a redirection token",
             )),
             Token::Argument(_, _) => Err(Error::new(
-                ErrorKind::BrokenPipe,
+                ErrorKind::Other,
                 "Checked token is not a redirection token",
             )),
             Token::String(_, _) => Err(Error::new(
-                ErrorKind::BrokenPipe,
+                ErrorKind::Other,
                 "Checked token is not a redirection token",
             )),
             Token::Redirector(prefix) => Ok(prefix == &'1'),
@@ -65,19 +65,19 @@ impl Token {
     pub fn is_redirection_err(&self) -> Result<bool, Error> {
         match self {
             Token::Space => Err(Error::new(
-                ErrorKind::BrokenPipe,
+                ErrorKind::Other,
                 "Checked token is not a redirection token",
             )),
             Token::Value(_) => Err(Error::new(
-                ErrorKind::BrokenPipe,
+                ErrorKind::Other,
                 "Checked token is not a redirection token",
             )),
             Token::Argument(_, _) => Err(Error::new(
-                ErrorKind::BrokenPipe,
+                ErrorKind::Other,
                 "Checked token is not a redirection token",
             )),
             Token::String(_, _) => Err(Error::new(
-                ErrorKind::BrokenPipe,
+                ErrorKind::Other,
                 "Checked token is not a redirection token",
             )),
             Token::Redirector(prefix) => Ok(prefix == &'2'),

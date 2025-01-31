@@ -1,13 +1,11 @@
 use std::io::{Error, ErrorKind};
 
-use shell_starter_rust::tokenizer::Token;
-
-use crate::command::Command;
+use crate::{shell::core::ShellCommand, tokenizer::Token};
 
 pub struct Exit {}
 
-impl Command for Exit {
-    fn run(&self, tokens: &[Token]) -> Result<String, std::io::Error> {
+impl ShellCommand<Token> for Exit {
+    fn run(tokens: &[Token]) -> Result<String, Error> {
         if tokens.get(2) == Some(&Token::Value("0".to_string())) {
             return Err(Error::new(ErrorKind::Interrupted, ""));
         } else {

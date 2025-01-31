@@ -6,6 +6,8 @@ use std::{
 
 pub use token::Token;
 
+use crate::shell::core::ShellTokenizer;
+
 mod token;
 
 #[derive(PartialEq, Eq)]
@@ -18,181 +20,185 @@ enum ParseMode {
     DoubleDashArg,
 }
 
-pub fn tokenize(input: &str) -> Result<Vec<Token>, Error> {
-    let mut iter = input.chars().into_iter().enumerate().peekable();
-    let mut tokens: Vec<Token> = Vec::new();
-    let mut buffer = String::new();
-    let mut mode = ParseMode::None;
-    let mut sub_mode = ParseMode::None;
+pub struct Tokenizer {}
 
-    while let Some((i, ch)) = iter.next() {
-        match mode {
-            ParseMode::None => match ch {
-                '\'' => mode = ParseMode::SingleQuote,
-                '"' => mode = ParseMode::DoubleQuote,
-                '\\' => {
-                    mode = ParseMode::Value;
+impl ShellTokenizer<Token> for Tokenizer {
+    fn tokenize(input: &str) -> Result<Vec<Token>, Error> {
+        let mut iter = input.chars().into_iter().enumerate().peekable();
+        let mut tokens: Vec<Token> = Vec::new();
+        let mut buffer = String::new();
+        let mut mode = ParseMode::None;
+        let mut sub_mode = ParseMode::None;
 
-                    match iter.peek() {
-                        Some(_) => {
-                            let (_index, ch) = iter.next().unwrap();
-
-                            buffer.push(ch)
-                        }
-                        None => todo!(),
-                    }
-                }
-                '-' => {
-                    if matches!(iter.peek(), Some(&(_, '-'))) {
-                        iter.next();
-                        mode = ParseMode::DoubleDashArg
-                    } else {
-                        mode = ParseMode::SingleDashArg
-                    }
-                }
-                'a'..='z' | 'A'..='Z' | '_' | '.' | '/' | '~' if buffer.is_empty() => {
-                    mode = ParseMode::Value;
-                    buffer.push(ch);
-                }
-                '0'..='9' if buffer.is_empty() => {
-                    if let Some((_, '>')) = iter.peek() {
-                        iter.next();
-                        tokens.push(parse_redirector(&mut iter, ch)?)
-                    } else {
-                        buffer.push(ch);
+        while let Some((i, ch)) = iter.next() {
+            match mode {
+                ParseMode::None => match ch {
+                    '\'' => mode = ParseMode::SingleQuote,
+                    '"' => mode = ParseMode::DoubleQuote,
+                    '\\' => {
                         mode = ParseMode::Value;
-                    }
-                }
-                '>' => tokens.push(parse_redirector(&mut iter, '1')?),
-                ' ' => {
-                    if tokens.last() != Some(&Token::Space) {
-                        tokens.push(Token::Space)
-                    }
-                }
-                _ => {
-                    return Err(Error::new(
-                        ErrorKind::InvalidInput,
-                        format!("Invalid character at {}", i),
-                    ))
-                }
-            },
-            ParseMode::Value => match ch {
-                'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' | '.' | '/' => buffer.push(ch),
-                '\\' => {
-                    let ch = iter.peek();
 
-                    match ch {
-                        Some(_) => {
-                            let (_index, ch) = iter.next().unwrap();
+                        match iter.peek() {
+                            Some(_) => {
+                                let (_index, ch) = iter.next().unwrap();
 
-                            buffer.push(ch)
+                                buffer.push(ch)
+                            }
+                            None => todo!(),
                         }
-                        None => todo!(),
                     }
-                }
-                ' ' => {
-                    tokens.push(generate_token(mode, &buffer));
-                    tokens.push(Token::Space);
-
-                    buffer = String::new();
-                    mode = ParseMode::None;
-                    sub_mode = ParseMode::None;
-                }
-                _ => {
-                    return Err(Error::new(
-                        ErrorKind::InvalidInput,
-                        format!("Invalid character at {}", i),
-                    ))
-                }
-            },
-            ParseMode::SingleQuote => match ch {
-                '\'' => {
-                    tokens.push(generate_token(mode, &buffer));
-
-                    buffer = String::new();
-                    mode = ParseMode::None;
-                    sub_mode = ParseMode::None;
-                }
-                _ => buffer.push(ch),
-            },
-            ParseMode::DoubleQuote => match ch {
-                '"' => {
-                    tokens.push(generate_token(mode, &buffer));
-
-                    buffer = String::new();
-                    mode = ParseMode::None;
-                    sub_mode = ParseMode::None;
-                }
-                '\\' => {
-                    if sub_mode == ParseMode::SingleQuote {
+                    '-' => {
+                        if matches!(iter.peek(), Some(&(_, '-'))) {
+                            iter.next();
+                            mode = ParseMode::DoubleDashArg
+                        } else {
+                            mode = ParseMode::SingleDashArg
+                        }
+                    }
+                    'a'..='z' | 'A'..='Z' | '_' | '.' | '/' | '~' if buffer.is_empty() => {
+                        mode = ParseMode::Value;
                         buffer.push(ch);
-                        continue;
                     }
-
-                    match iter.peek() {
-                        Some((_, '\\' | '$' | '"')) => {
-                            let (_index, ch) = iter.next().unwrap();
-
-                            buffer.push(ch)
-                        }
-                        Some(_) => {
+                    '0'..='9' if buffer.is_empty() => {
+                        if let Some((_, '>')) = iter.peek() {
+                            iter.next();
+                            tokens.push(parse_redirector(&mut iter, ch)?)
+                        } else {
                             buffer.push(ch);
+                            mode = ParseMode::Value;
                         }
-                        None => todo!(),
                     }
-                }
-                '\'' => match sub_mode {
-                    ParseMode::None => {
-                        buffer.push(ch);
-                        sub_mode = ParseMode::SingleQuote;
+                    '>' => tokens.push(parse_redirector(&mut iter, '1')?),
+                    ' ' => {
+                        if tokens.last() != Some(&Token::Space) {
+                            tokens.push(Token::Space)
+                        }
                     }
-                    ParseMode::SingleQuote => {
-                        buffer.push(ch);
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::InvalidInput,
+                            format!("Invalid character at {}", i),
+                        ))
+                    }
+                },
+                ParseMode::Value => match ch {
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' | '.' | '/' => buffer.push(ch),
+                    '\\' => {
+                        let ch = iter.peek();
+
+                        match ch {
+                            Some(_) => {
+                                let (_index, ch) = iter.next().unwrap();
+
+                                buffer.push(ch)
+                            }
+                            None => todo!(),
+                        }
+                    }
+                    ' ' => {
+                        tokens.push(generate_token(mode, &buffer));
+                        tokens.push(Token::Space);
+
+                        buffer = String::new();
+                        mode = ParseMode::None;
                         sub_mode = ParseMode::None;
                     }
-                    _ => todo!(),
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::InvalidInput,
+                            format!("Invalid character at {}", i),
+                        ))
+                    }
                 },
-                _ => buffer.push(ch),
-            },
-            ParseMode::SingleDashArg | ParseMode::DoubleDashArg => match ch {
-                'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => buffer.push(ch),
-                ' ' => {
-                    tokens.push(generate_token(mode, &buffer));
-                    tokens.push(Token::Space);
+                ParseMode::SingleQuote => match ch {
+                    '\'' => {
+                        tokens.push(generate_token(mode, &buffer));
 
-                    buffer = String::new();
-                    mode = ParseMode::None;
-                    sub_mode = ParseMode::None;
-                }
-                _ => {
-                    return Err(Error::new(
-                        ErrorKind::InvalidInput,
-                        format!("Invalid character at {}", i),
-                    ))
-                }
-            },
-        }
-    }
+                        buffer = String::new();
+                        mode = ParseMode::None;
+                        sub_mode = ParseMode::None;
+                    }
+                    _ => buffer.push(ch),
+                },
+                ParseMode::DoubleQuote => match ch {
+                    '"' => {
+                        tokens.push(generate_token(mode, &buffer));
 
-    match mode {
-        ParseMode::SingleQuote => {
-            return Err(Error::new(
-                ErrorKind::InvalidInput,
-                "Single quote didn't end.",
-            ))
+                        buffer = String::new();
+                        mode = ParseMode::None;
+                        sub_mode = ParseMode::None;
+                    }
+                    '\\' => {
+                        if sub_mode == ParseMode::SingleQuote {
+                            buffer.push(ch);
+                            continue;
+                        }
+
+                        match iter.peek() {
+                            Some((_, '\\' | '$' | '"')) => {
+                                let (_index, ch) = iter.next().unwrap();
+
+                                buffer.push(ch)
+                            }
+                            Some(_) => {
+                                buffer.push(ch);
+                            }
+                            None => todo!(),
+                        }
+                    }
+                    '\'' => match sub_mode {
+                        ParseMode::None => {
+                            buffer.push(ch);
+                            sub_mode = ParseMode::SingleQuote;
+                        }
+                        ParseMode::SingleQuote => {
+                            buffer.push(ch);
+                            sub_mode = ParseMode::None;
+                        }
+                        _ => todo!(),
+                    },
+                    _ => buffer.push(ch),
+                },
+                ParseMode::SingleDashArg | ParseMode::DoubleDashArg => match ch {
+                    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => buffer.push(ch),
+                    ' ' => {
+                        tokens.push(generate_token(mode, &buffer));
+                        tokens.push(Token::Space);
+
+                        buffer = String::new();
+                        mode = ParseMode::None;
+                        sub_mode = ParseMode::None;
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::InvalidInput,
+                            format!("Invalid character at {}", i),
+                        ))
+                    }
+                },
+            }
         }
-        ParseMode::DoubleQuote => {
-            return Err(Error::new(
-                ErrorKind::InvalidInput,
-                "Double quote didn't end.",
-            ))
-        }
-        ParseMode::None => {
-            return Ok(tokens.to_vec());
-        }
-        _ => {
-            tokens.push(generate_token(mode, &buffer));
-            return Ok(tokens.to_vec());
+
+        match mode {
+            ParseMode::SingleQuote => {
+                return Err(Error::new(
+                    ErrorKind::InvalidInput,
+                    "Single quote didn't end.",
+                ))
+            }
+            ParseMode::DoubleQuote => {
+                return Err(Error::new(
+                    ErrorKind::InvalidInput,
+                    "Double quote didn't end.",
+                ))
+            }
+            ParseMode::None => {
+                return Ok(tokens.to_vec());
+            }
+            _ => {
+                tokens.push(generate_token(mode, &buffer));
+                return Ok(tokens.to_vec());
+            }
         }
     }
 }

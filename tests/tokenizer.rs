@@ -1,8 +1,11 @@
 use std::io::ErrorKind;
 
-use shell_starter_rust::tokenizer::{
-    tokenize,
-    Token::{self, Appender, Argument, Redirector, Space, String, Value},
+use shell_starter_rust::{
+    shell::core::ShellTokenizer,
+    tokenizer::{
+        Token::{self, Appender, Argument, Redirector, Space, String, Value},
+        Tokenizer,
+    },
 };
 
 // Basic
@@ -285,14 +288,14 @@ fn assert_vec_eq<T: std::fmt::Debug + PartialEq>(vec1: &[T], vec2: &[T]) {
 }
 
 fn assert_parsing(input: &str, expected: Vec<Token>) {
-    match tokenize(input) {
+    match Tokenizer::tokenize(input) {
         Ok(tokens) => assert_vec_eq(&tokens, &expected),
         Err(err) => panic!("Unexpected error: {}", err),
     }
 }
 
 fn assert_parsing_err(input: &str) {
-    let result = tokenize(input);
+    let result = Tokenizer::tokenize(input);
 
     assert!(result.is_err());
     assert_eq!(result.err().unwrap().kind(), ErrorKind::InvalidInput);
