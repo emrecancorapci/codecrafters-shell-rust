@@ -10,6 +10,7 @@ pub trait ShellTokenizer<T> {
 
 pub trait ShellCommandProvider<T> {
     fn run(cmd: &str, tokens: &[T]) -> Result<String, std::io::Error>;
+    fn get_commands() -> Vec<&'static str>;
 }
 
 pub trait ShellCommand<T> {

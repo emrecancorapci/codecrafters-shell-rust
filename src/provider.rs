@@ -25,4 +25,8 @@ impl ShellCommandProvider<Token> for CommandProvider {
             )),
         }
     }
+
+    fn get_commands() -> Vec<&'static str> {
+        return SUPPORTED_COMMANDS.to_vec();
+    }
 }

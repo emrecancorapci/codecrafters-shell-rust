@@ -9,5 +9,5 @@ pub mod util {
     pub mod path;
 }
 pub mod interpreter;
-pub mod shell;
 pub mod provider;
+pub mod shell;

@@ -145,7 +145,22 @@ impl Shell {
 
                 self.buffer.clear();
             }
-            KeyCode::Tab => {}
+            KeyCode::Tab => {
+                match CommandProvider::get_commands()
+                    .iter()
+                    .find(|c| c.starts_with(self.buffer.trim()))
+                {
+                    Some(found_command) => {
+                        let rest_of_the_command = &found_command[self.buffer.trim().len()..];
+
+                        self.stdout.write(rest_of_the_command.as_bytes())?;
+                        self.buffer.push_str(rest_of_the_command);
+                    }
+                    None => {
+                        self.stdout.write(&[7])?;
+                    }
+                }
+            }
             KeyCode::Backspace => {
                 self.buffer.pop();
 
