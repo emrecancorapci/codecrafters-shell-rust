@@ -13,9 +13,8 @@ impl ShellCommand<Token> for Echo {
         }
 
         let mut string = String::new();
-        let mut iter = tokens.iter().skip(2).enumerate();
 
-        while let Some((i, token)) = iter.next() {
+        for (i, token) in tokens.iter().skip(2).enumerate() {
             match token {
                 Token::Space => {
                     if i > 0 {
@@ -24,8 +23,8 @@ impl ShellCommand<Token> for Echo {
                 }
                 Token::Value(cmd) => string.push_str(cmd.as_str()),
                 Token::String(str, _) => string.push_str(str.as_str()),
-                Token::Appender(_) => return Ok(string),
-                Token::Redirector(_) => return Ok(string),
+                Token::Appender(_) => unimplemented!(),
+                Token::Redirector(_) => unimplemented!(),
                 _ => {}
             }
         }

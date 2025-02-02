@@ -20,7 +20,7 @@ impl Token {
             Token::Value(val) => val.to_string(),
             Token::Argument(val, is_double) => {
                 let dashes = if *is_double { "--" } else { "-" };
-                format!("{}{}", dashes, val.to_string())
+                format!("{}{}", dashes, val)
             }
             Token::String(val, _) => val.to_string(),
             Token::Redirector(num) => format!("{}>", num),
@@ -88,7 +88,7 @@ impl Token {
 
 impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{}", self.serialize())
     }
 }
 
@@ -97,10 +97,10 @@ impl Clone for Token {
         match self {
             Self::Space => Self::Space,
             Self::Value(arg0) => Self::Value(arg0.clone()),
-            Self::Argument(arg0, arg1) => Self::Argument(arg0.clone(), arg1.clone()),
-            Self::String(arg0, arg1) => Self::String(arg0.clone(), arg1.clone()),
-            Self::Redirector(arg0) => Self::Redirector(arg0.clone()),
-            Self::Appender(arg0) => Self::Appender(arg0.clone()),
+            Self::Argument(arg0, arg1) => Self::Argument(arg0.clone(), *arg1),
+            Self::String(arg0, arg1) => Self::String(arg0.clone(), *arg1),
+            Self::Redirector(arg0) => Self::Redirector(*arg0),
+            Self::Appender(arg0) => Self::Appender(*arg0),
         }
     }
 }

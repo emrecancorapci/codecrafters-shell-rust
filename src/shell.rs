@@ -127,18 +127,17 @@ impl Shell {
                 if !self.buffer.is_empty() {
                     execute!(self.stdout, Print("\r\n"))?;
 
-                    match Tokenizer::tokenize(self.buffer.trim())? {
-                        tokens => match Interpreter::run::<CommandProvider>(&tokens) {
-                            Ok(ok) => {
-                                self.stdout.write(&ok)?;
+                    let tokens = Tokenizer::tokenize(self.buffer.trim())?;
+                    match Interpreter::run::<CommandProvider>(&tokens) {
+                        Ok(ok) => {
+                            self.stdout.write(&ok)?;
+                        }
+                        Err(err) => {
+                            if err.kind() == ErrorKind::Interrupted {
+                                return Err(err);
                             }
-                            Err(err) => {
-                                if err.kind() == ErrorKind::Interrupted {
-                                    return Err(err);
-                                }
-                                self.stderr.write(&err.to_string().as_bytes())?;
-                            }
-                        },
+                            self.stderr.write(&err.to_string().as_bytes())?;
+                        }
                     }
                 }
                 execute!(self.stdout, Print("\r\n"), Print(PREFIX))?;

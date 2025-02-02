@@ -20,7 +20,7 @@ impl ShellCommand<Token> for Cd {
                         if env::var("HOME").is_err() {
                             return Err(Error::new(
                                 ErrorKind::InvalidData,
-                                format!("HOME not set"),
+                                "HOME not set".to_string(),
                             ));
                         }
 
@@ -33,7 +33,7 @@ impl ShellCommand<Token> for Cd {
                         return Ok(String::new());
                     }
                     path => {
-                        if env::set_current_dir(&path).is_err() {
+                        if env::set_current_dir(path).is_err() {
                             return Err(Error::new(
                                 ErrorKind::InvalidData,
                                 format!("{}: No such file or directory", &path),

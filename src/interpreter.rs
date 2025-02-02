@@ -84,12 +84,10 @@ impl Interpreter {
 
                 output.split_output()
             }
-            Some(Token::Value(cmd) | Token::String(cmd, _)) => {
-                match CP::run(cmd, &tokens.to_vec()) {
-                    Ok(response) => (Some(response.as_bytes().to_vec()), None),
-                    Err(err) => (None, Some(err)),
-                }
-            }
+            Some(Token::Value(cmd) | Token::String(cmd, _)) => match CP::run(cmd, tokens) {
+                Ok(response) => (Some(response.as_bytes().to_vec()), None),
+                Err(err) => (None, Some(err)),
+            },
             Some(_) => return Err(Error::new(ErrorKind::InvalidInput, "error: invalid input")),
             None => return Ok(vec![]),
         };
@@ -147,7 +145,7 @@ impl Interpreter {
     }
 
     fn append_to_file(path: &str, content: &[u8]) -> Result<(), Error> {
-        let mut contents = fs::read(&path)?;
+        let mut contents = fs::read(path)?;
 
         if !contents.is_empty() {
             contents.extend_from_slice(&[10]);

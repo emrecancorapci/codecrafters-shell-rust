@@ -24,7 +24,7 @@ pub struct Tokenizer {}
 
 impl ShellTokenizer<Token> for Tokenizer {
     fn tokenize(input: &str) -> Result<Vec<Token>, Error> {
-        let mut iter = input.chars().into_iter().enumerate().peekable();
+        let mut iter = input.chars().enumerate().peekable();
         let mut tokens: Vec<Token> = Vec::new();
         let mut buffer = String::new();
         let mut mode = ParseMode::None;
